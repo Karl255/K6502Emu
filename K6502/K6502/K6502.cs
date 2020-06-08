@@ -7,7 +7,7 @@
 		private byte Y { get; set; } = 0;
 		private short PC { get; set; } = 0;
 		private byte StackPointer { get; set; } = 0;
-		public StatusRegister Status { get; private set; } = new StatusRegister();
+		private StatusRegister Status = new StatusRegister();
 
 		public K6502()
 		{

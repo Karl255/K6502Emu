@@ -15,37 +15,38 @@ namespace UnitTests
 		[InlineData(7)]
 		public void StatusRegisterBitSetTrueTest(byte pos)
 		{
-			var cpu = new K6502();
+			var sr = new StatusRegister();
 
 			switch (pos)
 			{
 				case 0:
-					cpu.Status.Negative = true;
+					sr.Negative = true;
 					break;
 				case 1:
-					cpu.Status.Overflow = true;
+					sr.Overflow = true;
 					break;
 				case 3:
-					cpu.Status.Break = true;
+					sr.Break = true;
 					break;
 				case 4:
-					cpu.Status.Decimal = true;
+					sr.Decimal = true;
 					break;
 				case 5:
-					cpu.Status.Interrupt = true;
+					sr.Interrupt = true;
 					break;
 				case 6:
-					cpu.Status.Zero = true;
+					sr.Zero = true;
 					break;
 				case 7:
-					cpu.Status.Carry = true;
+					sr.Carry = true;
 					break;
 				default:
 					break;
 			}
 
-			Assert.Equal((byte)(1 << pos), cpu.Status.Byte);
+			Assert.Equal((byte)(1 << pos) & 0b0000_0100, sr.Byte);
 		}
+
 		[Theory]
 		[InlineData(0)]
 		[InlineData(1)]
@@ -56,37 +57,37 @@ namespace UnitTests
 		[InlineData(7)]
 		public void StatusRegisterBitSetFalseTest(byte pos)
 		{
-			var cpu = new K6502();
-			cpu.Status.Byte = 0B1111_1111;
+			var sr = new StatusRegister();
+			sr.Byte = 0B1111_1111;
 
 			switch (pos)
 			{
 				case 0:
-					cpu.Status.Negative = false;
+					sr.Negative = false;
 					break;
 				case 1:
-					cpu.Status.Overflow = false;
+					sr.Overflow = false;
 					break;
 				case 3:
-					cpu.Status.Break = false;
+					sr.Break = false;
 					break;
 				case 4:
-					cpu.Status.Decimal = false;
+					sr.Decimal = false;
 					break;
 				case 5:
-					cpu.Status.Interrupt = false;
+					sr.Interrupt = false;
 					break;
 				case 6:
-					cpu.Status.Zero = false;
+					sr.Zero = false;
 					break;
 				case 7:
-					cpu.Status.Carry = false;
+					sr.Carry = false;
 					break;
 				default:
 					break;
 			}
 
-			Assert.Equal((byte)~(byte)(1 << pos), cpu.Status.Byte);
+			Assert.Equal((byte)~(byte)(1 << pos), sr.Byte);
 		}
 
 		[Theory]
@@ -99,19 +100,19 @@ namespace UnitTests
 		[InlineData(7)]
 		public void StatusRegisterBitGetTest(byte pos)
 		{
-			var cpu = new K6502();
-			cpu.Status.Byte = (byte)(1 << pos);
+			var sr = new StatusRegister();
+			sr.Byte = (byte)(1 << pos);
 
 			Assert.True(pos switch
 			{
-				0 => cpu.Status.Negative,
-				1 => cpu.Status.Overflow,
+				0 => sr.Negative,
+				1 => sr.Overflow,
 
-				3 => cpu.Status.Break,
-				4 => cpu.Status.Decimal,
-				5 => cpu.Status.Interrupt,
-				6 => cpu.Status.Zero,
-				7 => cpu.Status.Carry,
+				3 => sr.Break,
+				4 => sr.Decimal,
+				5 => sr.Interrupt,
+				6 => sr.Zero,
+				7 => sr.Carry,
 				_ => true
 			});
 		}
