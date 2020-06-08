@@ -44,7 +44,7 @@ namespace UnitTests
 					break;
 			}
 
-			Assert.Equal((byte)(1 << pos) & 0b0000_0100, sr.Byte);
+			Assert.Equal((byte)(1 << pos) | 0b0000_0100, sr.Byte);
 		}
 
 		[Theory]

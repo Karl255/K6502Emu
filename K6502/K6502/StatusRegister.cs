@@ -2,15 +2,16 @@
 {
 	public class StatusRegister
 	{
-		public byte Byte { get; private set; } = 0b0000_0100;
+		private byte _byte = 0b0000_0100;
+		public byte Byte { get => _byte; set => _byte = (byte)(value | 0b0000_0100); }
 
-		public bool Negative  { get => (Byte & 1 << 0) > 0; set => Byte = (byte)(Byte & ~(1 << 0) | (value ? 1 : 0) << 0); }
-		public bool Overflow  { get => (Byte & 1 << 1) > 0; set => Byte = (byte)(Byte & ~(1 << 1) | (value ? 1 : 0) << 1); }
+		public bool Negative  { get => (_byte & 1 << 0) > 0; set => _byte = (byte)(_byte & ~(1 << 0) | (value ? 1 : 0) << 0); }
+		public bool Overflow  { get => (_byte & 1 << 1) > 0; set => _byte = (byte)(_byte & ~(1 << 1) | (value ? 1 : 0) << 1); }
 		//bit 2 is unused
-		public bool Break     { get => (Byte & 1 << 3) > 0; set => Byte = (byte)(Byte & ~(1 << 3) | (value ? 1 : 0) << 3); }
-		public bool Decimal   { get => (Byte & 1 << 4) > 0; set => Byte = (byte)(Byte & ~(1 << 4) | (value ? 1 : 0) << 4); }
-		public bool Interrupt { get => (Byte & 1 << 5) > 0; set => Byte = (byte)(Byte & ~(1 << 5) | (value ? 1 : 0) << 5); }
-		public bool Zero      { get => (Byte & 1 << 6) > 0; set => Byte = (byte)(Byte & ~(1 << 6) | (value ? 1 : 0) << 6); }
-		public bool Carry     { get => (Byte & 1 << 7) > 0; set => Byte = (byte)(Byte & ~(1 << 7) | (value ? 1 : 0) << 7); }
+		public bool Break     { get => (_byte & 1 << 3) > 0; set => _byte = (byte)(_byte & ~(1 << 3) | (value ? 1 : 0) << 3); }
+		public bool Decimal   { get => (_byte & 1 << 4) > 0; set => _byte = (byte)(_byte & ~(1 << 4) | (value ? 1 : 0) << 4); }
+		public bool Interrupt { get => (_byte & 1 << 5) > 0; set => _byte = (byte)(_byte & ~(1 << 5) | (value ? 1 : 0) << 5); }
+		public bool Zero      { get => (_byte & 1 << 6) > 0; set => _byte = (byte)(_byte & ~(1 << 6) | (value ? 1 : 0) << 6); }
+		public bool Carry     { get => (_byte & 1 << 7) > 0; set => _byte = (byte)(_byte & ~(1 << 7) | (value ? 1 : 0) << 7); }
 	}
 }
