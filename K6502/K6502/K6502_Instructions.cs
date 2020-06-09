@@ -19,7 +19,7 @@ namespace K6502Emu
 			Instructions[0x0C] = new Action[] { CYCLE_0, NOP_a_1, NOP_a_2, NOP_a_3 };
 			//Instructions[0x10] = new Action[] { /* BPL */ };
 			Instructions[0x14] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3 };
-			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1};
+			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1 };
 			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4 };
 
 		}
@@ -35,7 +35,7 @@ namespace K6502Emu
 		private void BRK_3() => Memory[0x0100 + S--] = (byte)(PC & 0xff);                //push PCL on stack
 		private void BRK_4() => Memory[0x0100 - S--] = P.Byte;                           //push P on stack
 		private void BRK_5() => PC = Memory[0xFFFE];                                     //fetch PCL
-		private void BRK_6() => PC |= (ushort)( Memory[0xFFFF] << 8);                    //fetch PCH
+		private void BRK_6() => PC |= (ushort)(Memory[0xFFFF] << 8);                     //fetch PCH
 
 		//04 NOP d - 3 cycle NOP
 		private void NOP_d_1() => AddressL = Memory[PC++]; //fetch zpg address, inc. PC
@@ -68,7 +68,7 @@ namespace K6502Emu
 		private void NOP_dx_3() => _ = Memory[AddressL];                    //read from address (throw away)
 
 		//18 CLC
-		public void CLC_1() => P.Carry = false;
+		private void CLC_1() => P.Carry = false;
 
 		//1C NOP a,x
 		private void NOP_ax_1() => AddressL = Memory[PC++]; //fetch low byte of address, inc. PC

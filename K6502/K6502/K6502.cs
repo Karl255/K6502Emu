@@ -11,20 +11,37 @@ namespace K6502Emu
 		private byte S { get; set; } = 0;    //stack pointer
 		private StatusRegister P = new StatusRegister();
 
-		private byte OpCode { get; set; } = 0;
+		private byte _opCode = 0;
+		private byte OpCode { get => _opCode; set { _opCode = value; OpCodeCycle = 0; } }
+
 		private byte AddressL { get; set; } = 0;
 		private byte AddressH { get; set; } = 0;
 		private byte Operand { get; set; } = 0;
+		private int OpCodeCycle { get; set; } = 0;
 
 		private Action[][] Instructions;
 		private ComponentBus Memory;
 
-		public K6502()
+		public K6502(ComponentBus bus)
 		{
 			InitInstructions();
-			Memory = new ComponentBus();
+			Memory = bus;
+
 		}
 
+		public void Tick()
+		{
+			if (OpCodeCycle < Instructions[OpCode].Length)
+			{
+				Instructions[OpCode][OpCodeCycle]();
+				OpCodeCycle++;
+			}
+			else
+			{
+				CYCLE_0();
+			}
+
+		}
 
 	}
 }
