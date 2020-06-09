@@ -15,8 +15,8 @@ namespace K6502Emu
 
 		public override byte this[ushort address]
 		{
-			get => memory[address];
-			set => memory[address] = value;
+			get => memory[address - AddressRange.Start.Value];
+			set => memory[address - AddressRange.Start.Value] = value;
 		}
 	}
 }
