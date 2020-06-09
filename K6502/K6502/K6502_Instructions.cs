@@ -2,6 +2,7 @@
  * instruction references used:
  * - http://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes
  * - http://nesdev.com/6502_cpu.txt
+ * - https://www.masswerk.at/6502/6502_instruction_set.html
  */
 
 using System;
@@ -13,23 +14,26 @@ namespace K6502Emu
 		private void InitInstructions()
 		{
 			Instructions = new Action[256][];
-			Instructions[0x00] = new Action[] { CYCLE_0, BRK_1, BRK_2, BRK_3, BRK_4, BRK_5, BRK_6 };
-			Instructions[0x04] = new Action[] { CYCLE_0, NOP_d_1, NOP_d_2 };
-			Instructions[0x08] = new Action[] { CYCLE_0, PHP_1, PHP_2 };
-			Instructions[0x0C] = new Action[] { CYCLE_0, NOP_a_1, NOP_a_2, NOP_a_3 };
+			Instructions[0x00] = new Action[] { BRK_1, BRK_2, BRK_3, BRK_4, BRK_5, BRK_6 };
+			Instructions[0x04] = new Action[] { NOP_d_1, NOP_d_2 };
+			Instructions[0x08] = new Action[] { PHP_1, PHP_2 };
+			Instructions[0x0C] = new Action[] { NOP_a_1, NOP_a_2, NOP_a_3 };
 			//Instructions[0x10] = new Action[] { /* BPL */ };
-			Instructions[0x14] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3 };
-			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1 };
-			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4 };
+			Instructions[0x14] = new Action[] { NOP_dx_1, NOP_dx_2, NOP_dx_3 };
+			Instructions[0x18] = new Action[] { CLC_1 };
+			Instructions[0x1C] = new Action[] { NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4 };
 
 		}
+		/*
+		 * instructions prefixed with * are unofficial/undocumented
+		 */
 
-		/* cycle 0 for all instructions */
+		//cycle 0 for all instructions
 		private void CYCLE_0() => OpCode = Memory[PC++]; //fetch opcode, inc. PC
 
-		/* control instructions */
+		//control instructions
 
-		//00 BRK - break
+		//00 BRK
 		private void BRK_1() => _ = Memory[PC++];                                        //read next instruction byte (throw away), inc. PC
 		private void BRK_2() { Memory[0x0100 + S--] = (byte)(PC >> 8); P.Break = true; } //push PCH on stack, with B set
 		private void BRK_3() => Memory[0x0100 + S--] = (byte)(PC & 0xff);                //push PCL on stack
@@ -37,7 +41,7 @@ namespace K6502Emu
 		private void BRK_5() => PC = Memory[0xFFFE];                                     //fetch PCL
 		private void BRK_6() => PC |= (ushort)(Memory[0xFFFF] << 8);                     //fetch PCH
 
-		//04 NOP d - 3 cycle NOP
+		//04 *NOP zpg
 		private void NOP_d_1() => AddressL = Memory[PC++]; //fetch zpg address, inc. PC
 		private void NOP_d_2() => _ = Memory[AddressL];    //read from address and throw away
 
@@ -45,12 +49,12 @@ namespace K6502Emu
 		private void PHP_1() => _ = Memory[PC];                //read next instruction byte (throw away)
 		private void PHP_2() => Memory[0x0100 + S--] = P.Byte; //push P on stack
 
-		//0C NOP - a
+		//0C *NOP abs
 		private void NOP_a_1() => AddressL = Memory[PC++];              //fetch low byte of address, inc. PC
 		private void NOP_a_2() => AddressH = Memory[PC++];              //fetch high byte of address, inc. PC
 		private void NOP_a_3() => _ = Memory[AddressL + AddressH << 8]; //read from abs address (throw away)
 
-		//10 BPL
+		//10 BPL rel
 		/*
 		private void BPL_1() => Operand = Memory[PC++]; //fetch operand, inc. PC
 		private void BPL_2()
@@ -62,7 +66,7 @@ namespace K6502Emu
 		}
 		*/
 
-		//14 NOP d,x
+		//14 *NOP zpg,X
 		private void NOP_dx_1() => AddressL = Memory[PC++];                 //fetch address for operand, inc. PC
 		private void NOP_dx_2() => AddressL = (byte)(Memory[AddressL] + X); //read operand from address and add X to it
 		private void NOP_dx_3() => _ = Memory[AddressL];                    //read from address (throw away)
@@ -70,7 +74,7 @@ namespace K6502Emu
 		//18 CLC
 		private void CLC_1() => P.Carry = false;
 
-		//1C NOP a,x
+		//1C NOP abs,x
 		private void NOP_ax_1() => AddressL = Memory[PC++]; //fetch low byte of address, inc. PC
 		private void NOP_ax_2()
 		{
@@ -85,62 +89,62 @@ namespace K6502Emu
 		}
 		private void NOP_ax_4() => _ = Memory[AddressL + AddressH << 8]; //re-read from effective address (throw away)
 
-		//20
-		//24
-		//28
-		//2C
-		//30
-		//34
-		//38
-		//3C
-		//40
-		//44
-		//48
-		//4C
-		//50
-		//54
-		//58
-		//5C
-		//60
-		//64
-		//68
-		//6C
-		//70
-		//74
-		//78
-		//7C
-		//80
-		//84
-		//88
-		//8C
-		//90
-		//94
-		//98
-		//9C
-		//A0
-		//A4
-		//A8
-		//AC
-		//B0
-		//B4
-		//B8
-		//BC
-		//C0
-		//C4
-		//C8
-		//CC
-		//D0
-		//D4
-		//D8
-		//DC
-		//E0
-		//E4
-		//E8
-		//EC
-		//F0
-		//F4
-		//F8
-		//FC
+		//20 JSR abs
+		//24 BIT zpg
+		//28 PLP
+		//2C BIT abs
+		//30 BMI rel
+		//34 *NOP zpg,X
+		//38 SEC
+		//3C *NOP abs,X
+		//40 RTI
+		//44 *NOP zpg
+		//48 PHA
+		//4C JMP abs
+		//50 BVC rel
+		//54 *NOP zpg,X
+		//58 CLI
+		//5C *NOP abs,X
+		//60 RTS
+		//64 *NOP zpg
+		//68 PLA
+		//6C JMP ind
+		//70 BVS rel
+		//74 *NOP zpg,X
+		//78 SEI
+		//7C *NOP abs,X
+		//80 *NOP #
+		//84 STY zpg
+		//88 DEY
+		//8C STY abs
+		//90 BCC rel
+		//94 STY zpg,X
+		//98 TYA
+		//9C *SHY abs,X
+		//A0 LDY #
+		//A4 LDY zpg
+		//A8 TAY
+		//AC LDY abs
+		//B0 BCS rel
+		//B4 LDY zpg,X
+		//B8 CLV
+		//BC LDY abs,X
+		//C0 CPY #
+		//C4 CPY zpg
+		//C8 INY
+		//CC CPY abs
+		//D0 BNE rel
+		//D4 *NOP zpg,X
+		//D8 CLD
+		//DC *NOP abs,X
+		//E0 CPX #
+		//E4 CPX zpg
+		//E8 INX
+		//EC CPX abs
+		//F0 BEQ rel
+		//F4 *NOP zpg,X
+		//F8 SED
+		//FC *NOP abs,X
 
 		/* ALU operations */
 
