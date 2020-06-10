@@ -1,8 +1,9 @@
 ﻿/*
  * instruction references used:
- * - http://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes
+ * - http://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes (for method names and per-cycle operations)
  * - http://nesdev.com/6502_cpu.txt
- * - https://www.masswerk.at/6502/6502_instruction_set.html
+ * - https://www.masswerk.at/6502/6502_instruction_set.html (for comments and deatils about each instruction)
+ * - http://6502.org/tutorials/6502opcodes.html
  */
 
 using System;
@@ -13,20 +14,26 @@ namespace K6502Emu
 	{
 		private void InitInstructions()
 		{
-			Instructions = new Action[256][];
-			Instructions[0x00] = new Action[] { CYCLE_0, BRK_1, BRK_2, BRK_3, BRK_4, BRK_5, BRK_6 };
-			Instructions[0x04] = new Action[] { CYCLE_0, NOP_d_1, NOP_d_2 };
-			Instructions[0x08] = new Action[] { CYCLE_0, PHP_1, PHP_2 };
-			Instructions[0x0C] = new Action[] { CYCLE_0, NOP_a_1, NOP_a_2, NOP_a_3 };
-			Instructions[0x10] = new Action[] { CYCLE_0, BPL_1, BPL_2, BPL_3 };
-			Instructions[0x14] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3 };
-			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1 };
-			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4 };
+			Instructions[0x00] = new Action[] { CYCLE_0, BRK_1   , BRK_2   , BRK_3   , BRK_4,    BRK_5,    BRK_6     };
+			Instructions[0x04] = new Action[] { CYCLE_0, NOP_d_1 , NOP_d_2                                           };
+			Instructions[0x08] = new Action[] { CYCLE_0, PHP_1   , PHP_2                                             };
+			Instructions[0x0C] = new Action[] { CYCLE_0, NOP_a_1 , NOP_a_2 , NOP_a_3                                 };
+			Instructions[0x10] = new Action[] { CYCLE_0, BPL_1   , BPL_2   , BPL_3                                   };
+			Instructions[0x14] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
+			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1                                                       };
+			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
+
+			Instructions[0x20] = new Action[] { CYCLE_0, JSR_1   , JSR_2   , JSR_3   , JSR_4   , JSR_5               };
+			Instructions[0x24] = new Action[] { CYCLE_0, BIT_d_1 , BIT_d_2                                           };
+			Instructions[0x28] = new Action[] { CYCLE_0, PLP_1   , PLP_2   , PLP_3                                   };
+			Instructions[0x2C] = new Action[] { CYCLE_0, BIT_a_1 , BIT_a_2                                           };
+			Instructions[0x30] = new Action[] { CYCLE_0, BMI_1   , BMI_2   , BMI_3                                   };
+			Instructions[0x34] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
+			Instructions[0x38] = new Action[] { CYCLE_0, SEC_1                                                       };
+			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 
 		}
-		/*
-		 * instructions prefixed with * are unofficial/undocumented
-		 */
+		//instructions prefixed with * are unofficial/undocumented
 
 		//cycle 0 for all instructions
 		private void CYCLE_0()
@@ -107,13 +114,64 @@ namespace K6502Emu
 		private void NOP_ax_4() => _ = Memory[Address.Whole];          //re-read from effective address (throw away)
 
 		//20 JSR abs
+		private void JSR_1() => Address.Lower = Memory[PC.Whole++];                       //fetch low address byte, inc. PC
+		private void JSR_2() { }                                                          //internal operation (predecrement S), don't emulate
+		private void JSR_3() => Memory[0x0100 + S--] = PC.Upper;                          //push PCH on stack
+		private void JSR_4() => Memory[0x0100 + S--] = PC.Lower;                          //push PCL on stack
+		private void JSR_5() => (PC.Lower, PC.Upper) = (Address.Lower, Memory[PC.Whole]); //copy adr. low to PCL, fetch adr. high into PCH
+
 		//24 BIT zpg
+		private void BIT_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch address
+		private void BIT_d_2()
+		{
+			byte op = Memory[Address.Lower];                          //read from zpg address
+			P.Overflow = (op & (1 << 6)) > 0;                         //set V flag to bit 6 of operand
+			P.Negative = (op & (1 << 7)) > 0;                         //set N flag to bit 7 of operand
+			P.Zero = (op & A) == 0;                                   //and operand with A and update zero flag
+		}
+
 		//28 PLP
+		private void PLP_1() => _ = Memory[PC.Whole++];      //fetch next instruction byte (throw away)
+		private void PLP_2() => S++;                         //increment S
+		private void PLP_3() => P.Byte = Memory[0x0100 + S]; //pull P from stack
+
 		//2C BIT abs
+		private void BIT_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void BIT_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void BIT_a_3()
+		{
+			byte op = Memory[Address.Whole];                          //read from zpg address
+			P.Overflow = (op & (1 << 6)) > 0;                         //set V flag to bit 6 of operand
+			P.Negative = (op & (1 << 7)) > 0;                         //set N flag to bit 7 of operand
+			P.Zero = (op & A) == 0;                                   //and operand with A and update zero flag
+		}
+
 		//30 BMI rel
-		//34 *NOP zpg,X
+		private void BMI_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BMI_2()
+		{
+			if (P.Negative)                    //if positive
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BMI_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//38 SEC
-		//3C *NOP abs,X
+		private void SEC_1() => P.Carry = true; //set carry
+
 		//40 RTI
 		//44 *NOP zpg
 		//48 PHA
