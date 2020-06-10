@@ -26,11 +26,30 @@ namespace K6502Emu
 			Instructions[0x20] = new Action[] { CYCLE_0, JSR_1   , JSR_2   , JSR_3   , JSR_4   , JSR_5               };
 			Instructions[0x24] = new Action[] { CYCLE_0, BIT_d_1 , BIT_d_2                                           };
 			Instructions[0x28] = new Action[] { CYCLE_0, PLP_1   , PLP_2   , PLP_3                                   };
-			Instructions[0x2C] = new Action[] { CYCLE_0, BIT_a_1 , BIT_a_2                                           };
+			Instructions[0x2C] = new Action[] { CYCLE_0, BIT_a_1 , BIT_a_2 , BIT_a_3                                 };
 			Instructions[0x30] = new Action[] { CYCLE_0, BMI_1   , BMI_2   , BMI_3                                   };
 			Instructions[0x34] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
 			Instructions[0x38] = new Action[] { CYCLE_0, SEC_1                                                       };
 			Instructions[0x3C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
+
+			Instructions[0x40] = new Action[] { CYCLE_0, RTI_1   , RTI_2   , RTI_3   , RTI_4   , RTI_5               };
+			Instructions[0x44] = new Action[] { CYCLE_0, NOP_d_1 , NOP_d_2                                           };
+			Instructions[0x48] = new Action[] { CYCLE_0, PHA_1   , PHA_2                                             };
+			Instructions[0x4C] = new Action[] { CYCLE_0, JMP_a_1 , JMP_a_2                                           };
+			Instructions[0x50] = new Action[] { CYCLE_0, BVC_1   , BVC_2   , BVC_3                                   };
+			Instructions[0x54] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
+			Instructions[0x58] = new Action[] { CYCLE_0, CLI_1                                                       };
+			Instructions[0x5C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
+			
+			Instructions[0x60] = new Action[] { CYCLE_0, RTS_1   , RTS_2   , RTS_3   , RTS_4   , RTS_5               };
+			Instructions[0x64] = new Action[] { CYCLE_0, NOP_d_1 , NOP_d_2                                           };
+			Instructions[0x68] = new Action[] { CYCLE_0, PLA_1   , PLA_2   , PLA_3                                   };
+			Instructions[0x6C] = new Action[] { CYCLE_0, JMP_i_1 , JMP_i_2 , JMP_i_3 , JMP_i_4                       };
+			Instructions[0x70] = new Action[] { CYCLE_0, BVS_1   , BVS_2   , BVS_3                                   };
+			Instructions[0x74] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
+			Instructions[0x78] = new Action[] { CYCLE_0, SEI_1                                                       };
+			Instructions[0x7C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
+
 
 		}
 		//instructions prefixed with * are unofficial/undocumented
@@ -98,7 +117,8 @@ namespace K6502Emu
 		//18 CLC
 		private void CLC_1() => P.Carry = false; //clear carry
 
-		//1C *NOP abs,x //TODO: fix cycles
+		//1C, 3C, 5C, 7C, DC, FC
+		//*NOP abs,x //TODO: fix cycles
 		private void NOP_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
 		private void NOP_ax_2()
 		{
@@ -150,7 +170,7 @@ namespace K6502Emu
 		private void BMI_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
 		private void BMI_2()
 		{
-			if (P.Negative)                    //if positive
+			if (P.Negative)                    //if negative
 				PC.Lower++;                    //increment only lower byte of PC
 			else
 				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
@@ -173,21 +193,92 @@ namespace K6502Emu
 		private void SEC_1() => P.Carry = true; //set carry
 
 		//40 RTI
-		//44 *NOP zpg
+		private void RTI_1() => _ = Memory[PC.Whole];            //read next instruction byte (throw away)
+		private void RTI_2() => S++;                             //increment S
+		private void RTI_3() => P.Byte = Memory[0x0100 + S++];   //pull P from stack
+		private void RTI_4() => PC.Lower = Memory[0x0100 + S++]; //pull PCL from stack
+		private void RTI_5() => PC.Upper = Memory[0x0100 + S];   //pull PCH from stack
+
 		//48 PHA
+		private void PHA_1() => _ = Memory[PC.Whole];     //read next instruction byte (throw away)
+		private void PHA_2() => Memory[0x0100 + S--] = A; //push P on stack
+
 		//4C JMP abs
+		private void JMP_a_1() => Address.Lower = Memory[PC.Whole++];
+		private void JMP_a_2() => (PC.Lower, PC.Upper) = (Address.Lower, Memory[PC.Whole]);
+
 		//50 BVC rel
-		//54 *NOP zpg,X
+		private void BVC_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BVC_2()
+		{
+			if (!P.Overflow)                   //if overflow clear
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BVC_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//58 CLI
-		//5C *NOP abs,X
+		private void CLI_1() => P.Interrupt = false;
+
 		//60 RTS
-		//64 *NOP zpg
+		private void RTS_1() => _ = Memory[PC.Whole];            //read next instruction byte (throw away)
+		private void RTS_2() => S++;                             //increment S
+		private void RTS_3() => PC.Lower = Memory[0x0100 + S++]; //pull PCL from stack
+		private void RTS_4() => PC.Upper = Memory[0x0100 + S];   //pull PCH from stack
+		private void RTS_5() => PC.Whole++;
+
 		//68 PLA
+		private void PLA_1() => _ = Memory[PC.Whole++]; //fetch next instruction byte (throw away)
+		private void PLA_2() => S++;                    //increment S
+		private void PLA_3() => A = Memory[0x0100 + S]; //pull P from stack
+
+
 		//6C JMP ind
+		private void JMP_i_1() => Address.Lower = Memory[PC.Whole++];
+		private void JMP_i_2() => Address.Upper = Memory[PC.Whole++];
+		private void JMP_i_3() => Operand = Memory[Address.Whole];
+		private void JMP_i_4() => (PC.Lower, PC.Upper) = (Operand, Memory[Address.Whole + 1]);
+
+
 		//70 BVS rel
-		//74 *NOP zpg,X
+		private void BVS_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BVS_2()
+		{
+			if (P.Overflow)                    //if overflow set
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BVS_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//78 SEI
-		//7C *NOP abs,X
+		private void SEI_1() => P.Interrupt = true;
+
 		//80 *NOP #
 		//84 STY zpg
 		//88 DEY
