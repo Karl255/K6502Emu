@@ -20,7 +20,7 @@ namespace K6502Emu
 			Instructions[0x0C] = new Action[] { CYCLE_0, NOP_a_1 , NOP_a_2 , NOP_a_3                                 };
 			Instructions[0x10] = new Action[] { CYCLE_0, BPL_1   , BPL_2   , BPL_3                                   };
 			Instructions[0x14] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
-			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1                                                       };
+			Instructions[0x18] = new Action[] { CYCLE_0, CLC                                                         };
 			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 
 			Instructions[0x20] = new Action[] { CYCLE_0, JSR_1   , JSR_2   , JSR_3   , JSR_4   , JSR_5               };
@@ -29,7 +29,7 @@ namespace K6502Emu
 			Instructions[0x2C] = new Action[] { CYCLE_0, BIT_a_1 , BIT_a_2 , BIT_a_3                                 };
 			Instructions[0x30] = new Action[] { CYCLE_0, BMI_1   , BMI_2   , BMI_3                                   };
 			Instructions[0x34] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
-			Instructions[0x38] = new Action[] { CYCLE_0, SEC_1                                                       };
+			Instructions[0x38] = new Action[] { CYCLE_0, SEC                                                         };
 			Instructions[0x3C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 
 			Instructions[0x40] = new Action[] { CYCLE_0, RTI_1   , RTI_2   , RTI_3   , RTI_4   , RTI_5               };
@@ -38,7 +38,7 @@ namespace K6502Emu
 			Instructions[0x4C] = new Action[] { CYCLE_0, JMP_a_1 , JMP_a_2                                           };
 			Instructions[0x50] = new Action[] { CYCLE_0, BVC_1   , BVC_2   , BVC_3                                   };
 			Instructions[0x54] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
-			Instructions[0x58] = new Action[] { CYCLE_0, CLI_1                                                       };
+			Instructions[0x58] = new Action[] { CYCLE_0, CLI                                                         };
 			Instructions[0x5C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 			
 			Instructions[0x60] = new Action[] { CYCLE_0, RTS_1   , RTS_2   , RTS_3   , RTS_4   , RTS_5               };
@@ -47,9 +47,26 @@ namespace K6502Emu
 			Instructions[0x6C] = new Action[] { CYCLE_0, JMP_i_1 , JMP_i_2 , JMP_i_3 , JMP_i_4                       };
 			Instructions[0x70] = new Action[] { CYCLE_0, BVS_1   , BVS_2   , BVS_3                                   };
 			Instructions[0x74] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
-			Instructions[0x78] = new Action[] { CYCLE_0, SEI_1                                                       };
+			Instructions[0x78] = new Action[] { CYCLE_0, SEI                                                         };
 			Instructions[0x7C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 
+			Instructions[0x80] = new Action[] { CYCLE_0, NOP_im_1                                                    };
+			Instructions[0x84] = new Action[] { CYCLE_0, STY_d_1 , STY_d_2                                           };
+			Instructions[0x88] = new Action[] { CYCLE_0, DEY                                                         };
+			Instructions[0x8C] = new Action[] { CYCLE_0, STY_a_1 , STY_a_2 , STY_a_3                                 };
+			Instructions[0x90] = new Action[] { CYCLE_0, BCC_1   , BCC_2   , BCC_3                                   };
+			Instructions[0x94] = new Action[] { CYCLE_0, STY_dx_1, STY_dx_2, STY_dx_3                                };
+			Instructions[0x98] = new Action[] { CYCLE_0, TYA                                                         };
+			Instructions[0x9C] = new Action[] { CYCLE_0, SHY_ax_1, SHY_ax_2, SHY_ax_3, SHY_ax_4                      };
+
+			Instructions[0xA0] = new Action[] { CYCLE_0, LDY_im_1,                                                   };
+			Instructions[0xA4] = new Action[] { CYCLE_0, LDY_d_1 , LDY_d_2                                           };
+			Instructions[0xA8] = new Action[] { CYCLE_0, TAY                                                         };
+			Instructions[0xAC] = new Action[] { CYCLE_0, LDY_a_1 , LDY_a_2 , LDY_a_3                                 };
+			Instructions[0xB0] = new Action[] { CYCLE_0, BCS_1   , BCS_2   , BCS_3                                   };
+			Instructions[0xB4] = new Action[] { CYCLE_0, LDY_dx_1, LDY_dx_2, LDY_dx_3                                };
+			Instructions[0xB8] = new Action[] { CYCLE_0, CLV                                                         };
+			Instructions[0xBC] = new Action[] { CYCLE_0, LDY_ax_1, LDY_ax_2, LDY_ax_3, LDY_ax_4                      };
 
 		}
 		//instructions prefixed with * are unofficial/undocumented
@@ -115,7 +132,7 @@ namespace K6502Emu
 		private void NOP_dx_3() => _ = Memory[Address.Lower];                         //read from address (throw away)
 
 		//18 CLC
-		private void CLC_1() => P.Carry = false; //clear carry
+		private void CLC() => P.Carry = false; //clear carry
 
 		//1C, 3C, 5C, 7C, DC, FC
 		//*NOP abs,x //TODO: fix cycles
@@ -160,7 +177,7 @@ namespace K6502Emu
 		private void BIT_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
 		private void BIT_a_3()
 		{
-			byte op = Memory[Address.Whole];                          //read from zpg address
+			byte op = Memory[Address.Whole];                          //read from effective address
 			P.Overflow = (op & (1 << 6)) > 0;                         //set V flag to bit 6 of operand
 			P.Negative = (op & (1 << 7)) > 0;                         //set N flag to bit 7 of operand
 			P.Zero = (op & A) == 0;                                   //and operand with A and update zero flag
@@ -190,7 +207,7 @@ namespace K6502Emu
 		}
 
 		//38 SEC
-		private void SEC_1() => P.Carry = true; //set carry
+		private void SEC() => P.Carry = true; //set carry
 
 		//40 RTI
 		private void RTI_1() => _ = Memory[PC.Whole];            //read next instruction byte (throw away)
@@ -231,7 +248,7 @@ namespace K6502Emu
 		}
 
 		//58 CLI
-		private void CLI_1() => P.Interrupt = false;
+		private void CLI() => P.Interrupt = false;
 
 		//60 RTS
 		private void RTS_1() => _ = Memory[PC.Whole];            //read next instruction byte (throw away)
@@ -277,24 +294,132 @@ namespace K6502Emu
 		}
 
 		//78 SEI
-		private void SEI_1() => P.Interrupt = true;
+		private void SEI() => P.Interrupt = true; //set interrupt disable flag
 
 		//80 *NOP #
+		private void NOP_im_1() => _ = Memory[PC.Whole++]; //read operand (throw away)
+
 		//84 STY zpg
+		private void STY_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void STY_d_2() => Memory[Address.Lower] = Y;          //stora Y at zpg address
+
 		//88 DEY
+		private void DEY() => Y--; //decrement Y
+
 		//8C STY abs
+		private void STY_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch low address byte, inc. PC
+		private void STY_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch high address byte, inc. PC
+		private void STY_a_3() => Memory[Address.Whole] = Y;          //store Y at address
+
 		//90 BCC rel
+		private void BCC_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BCC_2()
+		{
+			if (!P.Carry)                      //if carry clear
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BCC_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//94 STY zpg,X
+		private void STY_dx_1() => Operand = Memory[PC.Whole++];                //fetch address, inc. PC
+		private void STY_dx_2() => Address.Lower = (byte)(Memory[Operand] + X); //read from address and add X to it
+		private void STY_dx_3() => Memory[Address.Lower] = Y;                   //store Y at effective address
+
 		//98 TYA
+		private void TYA() => A = Y; //transfer Y to A
+
 		//9C *SHY abs,X
+		private void SHY_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void SHY_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void SHY_ax_3()
+		{
+			_ = Memory[Address.Whole];                                 //read from effective address (throw away)
+			if (X > Address.Lower)                                     //page crossed, must inc. high byte of address and repeat read
+				Address.Upper++;
+		}
+		private void SHY_ax_4() =>
+			Memory[Address.Whole] = (byte)(Y & (Address.Upper + 1));   //write to effective address
+
 		//A0 LDY #
+		private void LDY_im_1() => Y = Memory[PC.Whole++]; //load Y from operand, inc. PC
+
 		//A4 LDY zpg
+		private void LDY_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void LDY_d_2() => Y = Memory[Address.Lower];          //load Y from zpg address
+
 		//A8 TAY
+		private void TAY() => Y = A; //transfer A to Y
+
 		//AC LDY abs
+		private void LDY_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void LDY_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void LDY_a_3() => Y = Memory[Address.Whole];          //load Y from effective address
+
 		//B0 BCS rel
+		private void BCS_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BCS_2()
+		{
+			if (P.Carry)                       //if carry set
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BCS_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//B4 LDY zpg,X
+		private void LDY_dx_1() => Operand = Memory[PC.Whole++];                //fetch address, inc. PC
+		private void LDY_dx_2() => Address.Lower = (byte)(Memory[Operand] + X); //read from address and add X to it
+		private void LDY_dx_3() => Memory[Address.Lower] = Y;                   //load Y from effective address
+
 		//B8 CLV
+		private void CLV() => P.Overflow = false;
+
 		//BC LDY abs,X
+		private void LDY_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void LDY_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void LDY_ax_3()
+		{
+			Y = Memory[Address.Whole];                                 //load Y from effective address
+			if (X > Address.Lower)                                     //page crossed, must inc. high byte of address and repeat read
+				Address.Upper++;
+		}
+		private void LDY_ax_4() => Y = Memory[Address.Whole];          //re-load Y from effective address
+
+
 		//C0 CPY #
 		//C4 CPY zpg
 		//C8 INY
