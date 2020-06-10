@@ -102,7 +102,7 @@ namespace K6502Emu
 		private void BRK_1() => _ = Memory[PC.Whole++];                           //read next instruction byte (throw away), inc. PC
 		private void BRK_2() { Memory[0x0100 + S--] = PC.Upper; P.Break = true; } //push PCH on stack, with B set
 		private void BRK_3() => Memory[0x0100 + S--] = PC.Lower;                  //push PCL on stack
-		private void BRK_4() => Memory[0x0100 - S--] = P.Byte;                    //push P on stack
+		private void BRK_4() => Memory[0x0100 + S--] = P.Byte;                    //push P on stack
 		private void BRK_5() => PC.Lower = Memory[0xFFFE];                        //fetch PCL
 		private void BRK_6() => PC.Upper = Memory[0xFFFF];                        //fetch PCH
 
