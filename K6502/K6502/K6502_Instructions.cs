@@ -32,76 +32,79 @@ namespace K6502Emu
 		private void CYCLE_0()
 		{
 			//TODO: handle interrupts here
-			OpCode = Memory[PC++]; //fetch opcode, inc. PC
+			OpCode = Memory[PC.Whole++]; //fetch opcode, inc. PC
 		}
 
 		//control instructions
 
 		//00 BRK
-		private void BRK_1() => _ = Memory[PC++];                                        //read next instruction byte (throw away), inc. PC
-		private void BRK_2() { Memory[0x0100 + S--] = (byte)(PC >> 8); P.Break = true; } //push PCH on stack, with B set
-		private void BRK_3() => Memory[0x0100 + S--] = (byte)(PC & 0xff);                //push PCL on stack
-		private void BRK_4() => Memory[0x0100 - S--] = P.Byte;                           //push P on stack
-		private void BRK_5() => PC = Memory[0xFFFE];                                     //fetch PCL
-		private void BRK_6() => PC |= (ushort)(Memory[0xFFFF] << 8);                     //fetch PCH
+		private void BRK_1() => _ = Memory[PC.Whole++];                           //read next instruction byte (throw away), inc. PC
+		private void BRK_2() { Memory[0x0100 + S--] = PC.Upper; P.Break = true; } //push PCH on stack, with B set
+		private void BRK_3() => Memory[0x0100 + S--] = PC.Lower;                  //push PCL on stack
+		private void BRK_4() => Memory[0x0100 - S--] = P.Byte;                    //push P on stack
+		private void BRK_5() => PC.Lower = Memory[0xFFFE];                        //fetch PCL
+		private void BRK_6() => PC.Upper = Memory[0xFFFF];                        //fetch PCH
 
-		//04 *NOP zpg
-		private void NOP_d_1() => AddressL = Memory[PC++]; //fetch zpg address, inc. PC
-		private void NOP_d_2() => _ = Memory[AddressL];    //read from address and throw away
+		//04, 44, 64
+		//*NOP zpg
+		private void NOP_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address, inc. PC
+		private void NOP_d_2() => _ = Memory[Address.Lower];          //read from address and throw away
 
 		//08 PHP - push processor status on stack
-		private void PHP_1() => _ = Memory[PC];                //read next instruction byte (throw away)
+		private void PHP_1() => _ = Memory[PC.Whole];          //read next instruction byte (throw away)
 		private void PHP_2() => Memory[0x0100 + S--] = P.Byte; //push P on stack
 
 		//0C *NOP abs
-		private void NOP_a_1() => AddressL = Memory[PC++];              //fetch low byte of address, inc. PC
-		private void NOP_a_2() => AddressH = Memory[PC++];              //fetch high byte of address, inc. PC
-		private void NOP_a_3() => _ = Memory[AddressL + AddressH << 8]; //read from abs address (throw away)
+		private void NOP_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void NOP_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch high byte of address, inc. PC
+		private void NOP_a_3() => _ = Memory[Address.Whole];          //read from abs address (throw away)
 
 		//10 BPL rel
-		private void BPL_1() => Operand = Memory[PC++]; //fetch operand, inc. PC
+		private void BPL_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
 		private void BPL_2()
 		{
-			if (!P.Negative) //if positive
-				PC = (ushort)((PC & 0xff00) | (PC + (sbyte)Operand & 0x00ff)); //increment only lower byte of PC
+			if (!P.Negative)                                  //if positive
+				PC.Lower++;                                   //increment only lower byte of PC
 			else
-				CYCLE_0(); //don't branch and do cycle 0 of next instruction
+				CYCLE_0();                                    //don't branch and do cycle 0 of next instruction
 		}
 		private void BPL_3()
 		{
-			//check if page got crossed by doing the reverse
-			int t = PC & 0x00ff - (sbyte)Operand;
-			if (t < 0 || t > 255) //if t is outside 0..255 then page was crossed
+			int t = PC.Lower - (sbyte)Operand;                //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)                             //if t is outside 0..255 then page was crossed
 			{
-				if (t > 0) PC -= 0x0100;  //move down 1 page
-				else PC += 0x0100;        //move up 1 page
+				if (t > 0)
+					PC.Upper--;                               //move down 1 page
+				else
+					PC.Upper++;                               //move up 1 page
 			}
 			else
-				CYCLE_0(); //if PC doesn't need adjustments, do cycle 0 of next instruction 
+				CYCLE_0();                                    //if PC doesn't need adjustments, do cycle 0 of next instruction 
 		}
 
-		//14 *NOP zpg,X
-		private void NOP_dx_1() => AddressL = Memory[PC++];                 //fetch address for operand, inc. PC
-		private void NOP_dx_2() => AddressL = (byte)(Memory[AddressL] + X); //read operand from address and add X to it
-		private void NOP_dx_3() => _ = Memory[AddressL];                    //read from address (throw away)
+		//14, 34, 54, 74, D4, F4
+		//*NOP zpg,X
+		private void NOP_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void NOP_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void NOP_dx_3() => _ = Memory[Address.Lower];                         //read from address (throw away)
 
 		//18 CLC
-		private void CLC_1() => P.Carry = false;
+		private void CLC_1() => P.Carry = false; //clear carry
 
-		//1C NOP abs,x
-		private void NOP_ax_1() => AddressL = Memory[PC++]; //fetch low byte of address, inc. PC
+		//1C *NOP abs,x //TODO: fix cycles
+		private void NOP_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
 		private void NOP_ax_2()
 		{
-			AddressH = Memory[PC++]; //fetch high byte of address
-			AddressL += X;           //add X to low address byte
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
 		}
 		private void NOP_ax_3()
 		{
-			_ = Memory[AddressL + AddressH << 8]; //read from effective address (throw away)
-			if (X > AddressL) //page crossed, must inc. high byte of address and repeat read
-				AddressH++;
+			_ = Memory[Address.Whole];                                 //read from effective address (throw away)
+			if (X > Address.Lower)                                     //page crossed, must inc. high byte of address and repeat read
+				Address.Upper++;
 		}
-		private void NOP_ax_4() => _ = Memory[AddressL + AddressH << 8]; //re-read from effective address (throw away)
+		private void NOP_ax_4() => _ = Memory[Address.Whole];          //re-read from effective address (throw away)
 
 		//20 JSR abs
 		//24 BIT zpg
