@@ -14,14 +14,14 @@ namespace K6502Emu
 		private void InitInstructions()
 		{
 			Instructions = new Action[256][];
-			Instructions[0x00] = new Action[] { BRK_1, BRK_2, BRK_3, BRK_4, BRK_5, BRK_6 };
-			Instructions[0x04] = new Action[] { NOP_d_1, NOP_d_2 };
-			Instructions[0x08] = new Action[] { PHP_1, PHP_2 };
-			Instructions[0x0C] = new Action[] { NOP_a_1, NOP_a_2, NOP_a_3 };
-			//Instructions[0x10] = new Action[] { /* BPL */ };
-			Instructions[0x14] = new Action[] { NOP_dx_1, NOP_dx_2, NOP_dx_3 };
-			Instructions[0x18] = new Action[] { CLC_1 };
-			Instructions[0x1C] = new Action[] { NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4 };
+			Instructions[0x00] = new Action[] { CYCLE_0, BRK_1, BRK_2, BRK_3, BRK_4, BRK_5, BRK_6 };
+			Instructions[0x04] = new Action[] { CYCLE_0, NOP_d_1, NOP_d_2 };
+			Instructions[0x08] = new Action[] { CYCLE_0, PHP_1, PHP_2 };
+			Instructions[0x0C] = new Action[] { CYCLE_0, NOP_a_1, NOP_a_2, NOP_a_3 };
+			Instructions[0x10] = new Action[] { CYCLE_0, BPL_1, BPL_2, BPL_3 };
+			Instructions[0x14] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3 };
+			Instructions[0x18] = new Action[] { CYCLE_0, CLC_1 };
+			Instructions[0x1C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4 };
 
 		}
 		/*
@@ -29,7 +29,11 @@ namespace K6502Emu
 		 */
 
 		//cycle 0 for all instructions
-		private void CYCLE_0() => OpCode = Memory[PC++]; //fetch opcode, inc. PC
+		private void CYCLE_0()
+		{
+			//TODO: handle interrupts here
+			OpCode = Memory[PC++]; //fetch opcode, inc. PC
+		}
 
 		//control instructions
 
@@ -55,16 +59,26 @@ namespace K6502Emu
 		private void NOP_a_3() => _ = Memory[AddressL + AddressH << 8]; //read from abs address (throw away)
 
 		//10 BPL rel
-		/*
 		private void BPL_1() => Operand = Memory[PC++]; //fetch operand, inc. PC
 		private void BPL_2()
 		{
-			OpCode = Memory[PC++]; //fetch opcode, inc. PC
-			//if positive, branch by relative address, otherwise inc. PC
-			if (P.Negative) PC++;
-			else PC += Operand;
+			if (!P.Negative) //if positive
+				PC = (ushort)((PC & 0xff00) | (PC + (sbyte)Operand & 0x00ff)); //increment only lower byte of PC
+			else
+				CYCLE_0(); //don't branch and do cycle 0 of next instruction
 		}
-		*/
+		private void BPL_3()
+		{
+			//check if page got crossed by doing the reverse
+			int t = PC & 0x00ff - (sbyte)Operand;
+			if (t < 0 || t > 255) //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0) PC -= 0x0100;  //move down 1 page
+				else PC += 0x0100;        //move up 1 page
+			}
+			else
+				CYCLE_0(); //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
 
 		//14 *NOP zpg,X
 		private void NOP_dx_1() => AddressL = Memory[PC++];                 //fetch address for operand, inc. PC

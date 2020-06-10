@@ -2,7 +2,7 @@
 {
 	public class StatusRegister
 	{
-		private byte _byte = 0b0000_0100;
+		private byte _byte = 0b0011_0100; //power up value is supposedly 0x34
 		public byte Byte { get => _byte; set => _byte = (byte)(value | 0b0000_0100); }
 
 		public bool Negative  { get => (_byte & 1 << 0) > 0; set => _byte = (byte)(_byte & ~(1 << 0) | (value ? 1 : 0) << 0); }
