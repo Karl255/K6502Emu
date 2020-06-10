@@ -4,11 +4,15 @@ namespace K6502Emu
 {
 	public partial class K6502
 	{
-		private byte A = 0;
-		private byte X = 0;
-		private byte Y = 0;
-		private byte S; //stack pointer
+		//the flags zero and negative are set/cleared when A/X/Y get loaded in any way
+		private byte A { get => _a; set { _a = SetFlagsOnLoad(value); } }
+		private byte X { get => _x; set { _x = SetFlagsOnLoad(value); } }
+		private byte Y { get => _y; set { _y = SetFlagsOnLoad(value); } }
+		private byte _a = 0;
+		private byte _x = 0;
+		private byte _y = 0;
 
+		private byte S; //stack pointer
 		private StatusRegister P = new StatusRegister();
 		private DoubleRegister PC = new DoubleRegister { Whole = 0 }; //program counter
 		private DoubleRegister Address = new DoubleRegister { Whole = 0 };
@@ -37,6 +41,22 @@ namespace K6502Emu
 			Instructions[OpCode][OpCodeCycle]();
 			OpCodeCycle++;
 
+		}
+
+		private byte SetFlagsOnLoad(byte val)
+		{
+			P.Zero = val == 0;
+			//bit 7 can be seen as sign in 2's complement numbers
+			//since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
+			P.Negative = val >= 128;
+			return val;
+		}
+
+		private void SetFlagsOnCompare(byte reg, byte val)
+		{
+			P.Carry = reg >= val;
+			P.Zero = reg == val;
+			P.Negative = reg - val < 0;
 		}
 	}
 }

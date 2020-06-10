@@ -4,6 +4,8 @@
  * - http://nesdev.com/6502_cpu.txt
  * - https://www.masswerk.at/6502/6502_instruction_set.html (for comments and deatils about each instruction)
  * - http://6502.org/tutorials/6502opcodes.html
+ * 
+ * instructions prefixed with * are unofficial/undocumented
  */
 
 using System;
@@ -50,7 +52,7 @@ namespace K6502Emu
 			Instructions[0x78] = new Action[] { CYCLE_0, SEI                                                         };
 			Instructions[0x7C] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 
-			Instructions[0x80] = new Action[] { CYCLE_0, NOP_im_1                                                    };
+			Instructions[0x80] = new Action[] { CYCLE_0, NOP_im                                                      };
 			Instructions[0x84] = new Action[] { CYCLE_0, STY_d_1 , STY_d_2                                           };
 			Instructions[0x88] = new Action[] { CYCLE_0, DEY                                                         };
 			Instructions[0x8C] = new Action[] { CYCLE_0, STY_a_1 , STY_a_2 , STY_a_3                                 };
@@ -59,7 +61,7 @@ namespace K6502Emu
 			Instructions[0x98] = new Action[] { CYCLE_0, TYA                                                         };
 			Instructions[0x9C] = new Action[] { CYCLE_0, SHY_ax_1, SHY_ax_2, SHY_ax_3, SHY_ax_4                      };
 
-			Instructions[0xA0] = new Action[] { CYCLE_0, LDY_im_1,                                                   };
+			Instructions[0xA0] = new Action[] { CYCLE_0, LDY_im                                                      };
 			Instructions[0xA4] = new Action[] { CYCLE_0, LDY_d_1 , LDY_d_2                                           };
 			Instructions[0xA8] = new Action[] { CYCLE_0, TAY                                                         };
 			Instructions[0xAC] = new Action[] { CYCLE_0, LDY_a_1 , LDY_a_2 , LDY_a_3                                 };
@@ -68,8 +70,24 @@ namespace K6502Emu
 			Instructions[0xB8] = new Action[] { CYCLE_0, CLV                                                         };
 			Instructions[0xBC] = new Action[] { CYCLE_0, LDY_ax_1, LDY_ax_2, LDY_ax_3, LDY_ax_4                      };
 
+			Instructions[0xC0] = new Action[] { CYCLE_0, CPY_im                                                      };
+			Instructions[0xC4] = new Action[] { CYCLE_0, CPY_d_1 , CPY_d_2                                           };
+			Instructions[0xC8] = new Action[] { CYCLE_0, INY                                                         };
+			Instructions[0xCC] = new Action[] { CYCLE_0, CPY_a_1 , CPY_a_2 , CPY_a_3                                 };
+			Instructions[0xD0] = new Action[] { CYCLE_0, BNE_1   , BNE_2   , BNE_3                                   };
+			Instructions[0xD4] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
+			Instructions[0xD8] = new Action[] { CYCLE_0, CLD                                                         };
+			Instructions[0xDC] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
+
+			Instructions[0xE0] = new Action[] { CYCLE_0, CPX_im                                                      };
+			Instructions[0xE4] = new Action[] { CYCLE_0, CPX_d_1 , CPX_d_2                                           };
+			Instructions[0xE8] = new Action[] { CYCLE_0, INX                                                         };
+			Instructions[0xEC] = new Action[] { CYCLE_0, CPX_a_1 , CPX_a_2 , CPX_a_3                                 };
+			Instructions[0xF0] = new Action[] { CYCLE_0, BEQ_1   , BEQ_2   , BEQ_3                                   };
+			Instructions[0xF4] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
+			Instructions[0xF8] = new Action[] { CYCLE_0, SED                                                         };
+			Instructions[0xFC] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
 		}
-		//instructions prefixed with * are unofficial/undocumented
 
 		//cycle 0 for all instructions
 		private void CYCLE_0()
@@ -297,7 +315,7 @@ namespace K6502Emu
 		private void SEI() => P.Interrupt = true; //set interrupt disable flag
 
 		//80 *NOP #
-		private void NOP_im_1() => _ = Memory[PC.Whole++]; //read operand (throw away)
+		private void NOP_im() => _ = Memory[PC.Whole++]; //read operand (throw away)
 
 		//84 STY zpg
 		private void STY_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
@@ -359,7 +377,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = (byte)(Y & (Address.Upper + 1));   //write to effective address
 
 		//A0 LDY #
-		private void LDY_im_1() => Y = Memory[PC.Whole++]; //load Y from operand, inc. PC
+		private void LDY_im() => Y = Memory[PC.Whole++]; //load Y from operand, inc. PC
 
 		//A4 LDY zpg
 		private void LDY_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
@@ -419,23 +437,88 @@ namespace K6502Emu
 		}
 		private void LDY_ax_4() => Y = Memory[Address.Whole];          //re-load Y from effective address
 
-
 		//C0 CPY #
+		private	void CPY_im() => SetFlagsOnCompare(Y, Memory[PC.Whole++]); //compare Y and immediate operand
+
 		//C4 CPY zpg
+		private void CPY_d_1() => Address.Lower = Memory[PC.Whole++];          //fetch zpg address
+		private void CPY_d_2() => SetFlagsOnCompare(Y, Memory[Address.Lower]); //compare Y and value at zpg address
+
 		//C8 INY
+		private void INY() => Y++; //increment Y
+
 		//CC CPY abs
+		private void CPY_a_1() => Address.Lower = Memory[PC.Whole++];
+		private void CPY_a_2() => Address.Upper = Memory[PC.Whole++];
+		private void CPY_a_3() => SetFlagsOnCompare(Y, Memory[Address.Whole]);
+
 		//D0 BNE rel
-		//D4 *NOP zpg,X
+		private void BNE_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BNE_2()
+		{
+			if (!P.Zero)                       //if zero flag clear
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BNE_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//D8 CLD
-		//DC *NOP abs,X
+		private void CLD() => P.Decimal = false;
+
 		//E0 CPX #
+		private void CPX_im() => SetFlagsOnCompare(X, Memory[PC.Whole++]); //compare X and immediate operand
+
 		//E4 CPX zpg
+		private void CPX_d_1() => Address.Lower = Memory[PC.Whole++];          //fetch zpg address
+		private void CPX_d_2() => SetFlagsOnCompare(X, Memory[Address.Lower]); //compare X and value at zpg address
+
 		//E8 INX
+		private void INX() => X++; //increment X
+
 		//EC CPX abs
+		private void CPX_a_1() => Address.Lower = Memory[PC.Whole++];
+		private void CPX_a_2() => Address.Upper = Memory[PC.Whole++];
+		private void CPX_a_3() => SetFlagsOnCompare(X, Memory[Address.Whole]);
+
 		//F0 BEQ rel
-		//F4 *NOP zpg,X
+		private void BEQ_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
+		private void BEQ_2()
+		{
+			if (P.Zero)                        //if zero flag set
+				PC.Lower++;                    //increment only lower byte of PC
+			else
+				CYCLE_0();                     //don't branch and do cycle 0 of next instruction
+		}
+		private void BEQ_3()
+		{
+			int t = PC.Lower - (sbyte)Operand; //check if page got crossed by doing the reverse
+			if (t < 0 || t > 255)              //if t is outside 0..255 then page was crossed
+			{
+				if (t > 0)
+					PC.Upper--;                //move down 1 page
+				else
+					PC.Upper++;                //move up 1 page
+			}
+			else
+				CYCLE_0();                     //if PC doesn't need adjustments, do cycle 0 of next instruction 
+		}
+
 		//F8 SED
-		//FC *NOP abs,X
+		private void SED() => P.Decimal = true;
+
 
 		/* ALU operations */
 
