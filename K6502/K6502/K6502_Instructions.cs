@@ -153,7 +153,7 @@ namespace K6502Emu
 		private void CLC() => P.Carry = false; //clear carry
 
 		//1C, 3C, 5C, 7C, DC, FC
-		//*NOP abs,x //TODO: fix cycles
+		//*NOP abs,x
 		private void NOP_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
 		private void NOP_ax_2()
 		{
@@ -163,10 +163,16 @@ namespace K6502Emu
 		private void NOP_ax_3()
 		{
 			_ = Memory[Address.Whole];                                 //read from effective address (throw away)
-			if (X > Address.Lower)                                     //page crossed, must inc. high byte of address and repeat read
+			if (X > Address.Lower)                                     //if page crossed, fix high byte of address
 				Address.Upper++;
 		}
-		private void NOP_ax_4() => _ = Memory[Address.Whole];          //re-read from effective address (throw away)
+		private void NOP_ax_4()
+		{
+			if (X > Address.Lower)
+				_ = Memory[Address.Whole];                             //re-read from effective address (throw away) and add a cycle
+			else
+				CYCLE_0();                                             //don't add cycle, do cycle 0 of next instruction
+		}
 
 		//20 JSR abs
 		private void JSR_1() => Address.Lower = Memory[PC.Whole++];                       //fetch low address byte, inc. PC
