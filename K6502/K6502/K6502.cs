@@ -5,9 +5,9 @@ namespace K6502Emu
 	public partial class K6502
 	{
 		//the flags zero and negative are set/cleared when A/X/Y get loaded in any way
-		private byte A { get => _a; set { _a = SetFlagsOnLoad(value); } }
-		private byte X { get => _x; set { _x = SetFlagsOnLoad(value); } }
-		private byte Y { get => _y; set { _y = SetFlagsOnLoad(value); } }
+		private byte A { get => _a; set => _a = SetFlagsOnLoad(value); }
+		private byte X { get => _x; set => _x = SetFlagsOnLoad(value); }
+		private byte Y { get => _y; set => _y = SetFlagsOnLoad(value); }
 		private byte _a = 0;
 		private byte _x = 0;
 		private byte _y = 0;
@@ -61,12 +61,28 @@ namespace K6502Emu
 
 		private void DoADC(byte val)
 		{
+			byte oldA = A;
+			byte carry = (byte)(P.Carry ? 1 : 0);
+			A = (byte)(A + val + carry); //A + M + C
 
+			P.Carry = A < oldA; //if unisgned overflow
+
+			int t = A + val + carry;          //sum them all as ints
+			P.Overflow = t > 127 || t < -128; //then see if the result is outside the sbyte range
+			//Zero and Negative are automatically set in SetFlagsOnLoad()
 		}
 
 		private void DoSBC(byte val)
 		{
+			byte oldA = A;
+			byte borrow = (byte)(P.Carry ? 0 : 1);
+			A = (byte)(A - val - borrow);
 
+			P.Carry = A > oldA; //if unsigned overflow
+
+			int t = A - val - borrow;         //sum them all as ints
+			P.Overflow = t > 127 || t < -128; //then see if the result is outside the sbyte range
+			//Zero and Negative are automatically set in SetFlagsOnLoad()
 		}
 	}
 }
