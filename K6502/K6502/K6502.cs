@@ -52,19 +52,19 @@ namespace K6502Emu
 			return val;
 		}
 
-		private void SetFlagsOnCompare(byte reg, byte val)
+		private void DoCompare(byte reg, byte val)
 		{
 			P.Carry = reg >= val;
 			P.Zero = reg == val;
 			P.Negative = reg - val < 0;
 		}
 
-		private void SetFlagsOnADC(byte val)
+		private void DoADC(byte val)
 		{
 
 		}
 
-		private void SetFlagsOnSBC(byte val)
+		private void DoSBC(byte val)
 		{
 
 		}

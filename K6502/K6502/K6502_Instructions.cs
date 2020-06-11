@@ -128,7 +128,7 @@ namespace K6502Emu
 
 			Instructions[0x81] = new Action[] { CYCLE_0, STA_xi_1, STA_xi_2, STA_xi_3, STA_xi_4, STA_xi_5            };
 			Instructions[0x85] = new Action[] { CYCLE_0, STA_d_1 , STA_d_2                                           };
-			Instructions[0x89] = new Action[] { CYCLE_0, STA_im                                                      };
+			Instructions[0x89] = new Action[] { CYCLE_0, NOP_im                                                      };
 			Instructions[0x8D] = new Action[] { CYCLE_0, STA_a_1 , STA_a_2 , STA_a_3                                 };
 			Instructions[0x91] = new Action[] { CYCLE_0, STA_iy_1, STA_iy_2, STA_iy_3, STA_iy_4, STA_iy_5            };
 			Instructions[0x95] = new Action[] { CYCLE_0, STA_dx_1, STA_dx_2, STA_dx_3                                };
@@ -519,11 +519,11 @@ namespace K6502Emu
 		private void LDY_ax_4() => Y = Memory[Address.Whole];          //re-load Y from effective address
 
 		//C0 CPY #
-		private	void CPY_im() => SetFlagsOnCompare(Y, Memory[PC.Whole++]); //compare Y and immediate operand
+		private	void CPY_im() => DoCompare(Y, Memory[PC.Whole++]); //compare Y and immediate operand
 
 		//C4 CPY zpg
 		private void CPY_d_1() => Address.Lower = Memory[PC.Whole++];          //fetch zpg address
-		private void CPY_d_2() => SetFlagsOnCompare(Y, Memory[Address.Lower]); //compare Y and value at zpg address
+		private void CPY_d_2() => DoCompare(Y, Memory[Address.Lower]); //compare Y and value at zpg address
 
 		//C8 INY
 		private void INY() => Y++; //increment Y
@@ -531,7 +531,7 @@ namespace K6502Emu
 		//CC CPY abs
 		private void CPY_a_1() => Address.Lower = Memory[PC.Whole++];
 		private void CPY_a_2() => Address.Upper = Memory[PC.Whole++];
-		private void CPY_a_3() => SetFlagsOnCompare(Y, Memory[Address.Whole]);
+		private void CPY_a_3() => DoCompare(Y, Memory[Address.Whole]);
 
 		//D0 BNE rel
 		private void BNE_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
@@ -560,11 +560,11 @@ namespace K6502Emu
 		private void CLD() => P.Decimal = false;
 
 		//E0 CPX #
-		private void CPX_im() => SetFlagsOnCompare(X, Memory[PC.Whole++]); //compare X and immediate operand
+		private void CPX_im() => DoCompare(X, Memory[PC.Whole++]); //compare X and immediate operand
 
 		//E4 CPX zpg
 		private void CPX_d_1() => Address.Lower = Memory[PC.Whole++];          //fetch zpg address
-		private void CPX_d_2() => SetFlagsOnCompare(X, Memory[Address.Lower]); //compare X and value at zpg address
+		private void CPX_d_2() => DoCompare(X, Memory[Address.Lower]); //compare X and value at zpg address
 
 		//E8 INX
 		private void INX() => X++; //increment X
@@ -572,7 +572,7 @@ namespace K6502Emu
 		//EC CPX abs
 		private void CPX_a_1() => Address.Lower = Memory[PC.Whole++];
 		private void CPX_a_2() => Address.Upper = Memory[PC.Whole++];
-		private void CPX_a_3() => SetFlagsOnCompare(X, Memory[Address.Whole]);
+		private void CPX_a_3() => DoCompare(X, Memory[Address.Whole]);
 
 		//F0 BEQ rel
 		private void BEQ_1() => Operand = Memory[PC.Whole++]; //fetch operand, inc. PC
@@ -710,7 +710,7 @@ namespace K6502Emu
 		}
 
 
-		//the following code (until the RMW instructions) was automatically generated
+		//NOTE: the following code (until the RMW instructions) was automatically generated
 
 		//21 AND x,ind
 		private void AND_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
@@ -931,19 +931,19 @@ namespace K6502Emu
 		private void ADC_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
 		private void ADC_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
 		private void ADC_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
-		private void ADC_xi_5() => SetFlagsOnADC(Memory[Address.Whole]);            //read from effective address and add with A
+		private void ADC_xi_5() => DoADC(Memory[Address.Whole]);          //read from effective address and perform addition
 
 		//65 ADC zpg
-		private void ADC_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
-		private void ADC_d_2() => SetFlagsOnADC(Memory[Address.Lower]);         //read from zpg address and add with A
+		private void ADC_d_1() => Address.Lower = Memory[PC.Whole++];   //fetch zpg address
+		private void ADC_d_2() => DoADC(Memory[Address.Lower]);         //read from zpg address and perform addition
 
 		//69 ADC #
-		private void ADC_im() => SetFlagsOnADC(Memory[PC.Whole++]); //read operand, inc. PC and add with A
+		private void ADC_im() => DoADC(Memory[PC.Whole++]); //read operand, inc. PC and perform addition
 
 		//6D ADC abs
-		private void ADC_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
-		private void ADC_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
-		private void ADC_a_3() => SetFlagsOnADC(Memory[Address.Whole]);         //read from effective address and add with A
+		private void ADC_a_1() => Address.Lower = Memory[PC.Whole++];   //fetch address lower
+		private void ADC_a_2() => Address.Upper = Memory[PC.Whole++];   //fetch address upper
+		private void ADC_a_3() => DoADC(Memory[Address.Whole]);         //read from effective address and perform addition
 
 		//71 ADC ind,y
 		private void ADC_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
@@ -962,13 +962,13 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnADC(Memory[Address.Whole]);                         //read from effective address and add with A
+				DoADC(Memory[Address.Whole]);                       //read from effective address and perform addition
 			}
 		}
 		private void ADC_iy_5()
 		{
 			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnADC(Memory[Address.Whole]);                         //add another cycle, read from effective address and add with A
+				DoADC(Memory[Address.Whole]);                       //add another cycle, read from effective address and perform addition
 			else
 				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
 		}
@@ -976,7 +976,7 @@ namespace K6502Emu
 		//75 ADC zpg,x
 		private void ADC_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
 		private void ADC_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
-		private void ADC_dx_3() => SetFlagsOnADC(Memory[Address.Lower]);                        //read from address and add with A
+		private void ADC_dx_3() => DoADC(Memory[Address.Lower]);                      //read from address and perform addition
 
 		//79 ADC abs,y
 		private void ADC_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
@@ -994,15 +994,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnADC(Memory[Address.Whole]);                            //read from effective address and add with A
+				DoADC(Memory[Address.Whole]);                          //read from effective address and perform addition
 			}
 		}
 		private void ADC_ay_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnADC(Memory[Address.Whole]);                         //add another cycle, read from effective address and add with A
+			if (Y > Address.Lower)                                     //if page crossed
+				DoADC(Memory[Address.Whole]);                          //add another cycle, read from effective address and perform addition
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 		//7D ADC abs,x
@@ -1021,15 +1021,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnADC(Memory[Address.Whole]);                            //read from effective address and add with A
+				DoADC(Memory[Address.Whole]);                          //read from effective address and perform addition
 			}
 		}
 		private void ADC_ax_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnADC(Memory[Address.Whole]);                         //add another cycle, read from effective address and add with A
+			if (Y > Address.Lower)                                     //if page crossed
+				DoADC(Memory[Address.Whole]);                          //add another cycle, read from effective address and perform addition
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 
@@ -1038,19 +1038,21 @@ namespace K6502Emu
 		private void STA_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
 		private void STA_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
 		private void STA_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
-		private void STA_xi_5() => Memory[Address.Whole] = A;            //read from effective address and STORE with A
+		private void STA_xi_5() => Memory[Address.Whole] = A;             //store A at effective address
 
 		//85 STA zpg
 		private void STA_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
-		private void STA_d_2() => Memory[Address.Lower] = A;         //read from zpg address and STORE with A
+		private void STA_d_2() => Memory[Address.Lower] = A;          //store A at zpg address
 
+		/* *NOP #
 		//89 STA #
 		private void STA_im() => Memory[PC.Whole++] = A; //read operand, inc. PC and STORE with A
+		*/
 
 		//8D STA abs
 		private void STA_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
 		private void STA_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
-		private void STA_a_3() => Memory[Address.Whole] = A;         //read from effective address and STORE with A
+		private void STA_a_3() => Memory[Address.Whole] = A;          //store A at effective address
 
 		//91 STA ind,y
 		private void STA_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
@@ -1069,13 +1071,13 @@ namespace K6502Emu
 			}
 			else
 			{
-				Memory[Address.Whole] = A;                         //read from effective address and STORE with A
+				Memory[Address.Whole] = A;                          //store A at effective address
 			}
 		}
 		private void STA_iy_5()
 		{
 			if (Y > Address.Lower)                                  //if page crossed
-				Memory[Address.Whole] = A;                         //add another cycle, read from effective address and STORE with A
+				Memory[Address.Whole] = A;                          //add another cycle and store A effective address
 			else
 				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
 		}
@@ -1083,7 +1085,7 @@ namespace K6502Emu
 		//95 STA zpg,x
 		private void STA_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
 		private void STA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
-		private void STA_dx_3() => Memory[Address.Lower] = A;                        //read from address and STORE with A
+		private void STA_dx_3() => Memory[Address.Lower] = A;                         //store A at address
 
 		//99 STA abs,y
 		private void STA_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
@@ -1106,10 +1108,10 @@ namespace K6502Emu
 		}
 		private void STA_ay_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				Memory[Address.Whole] = A;                         //add another cycle, read from effective address and STORE with A
+			if (Y > Address.Lower)                                    //if page crossed
+				Memory[Address.Whole] = A;                            //add another cycle and store A at effective address
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                            //don't add another cycle, do cycle 0 of next instruction
 		}
 
 		//9D STA abs,x
@@ -1128,15 +1130,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				Memory[Address.Whole] = A;                            //read from effective address and STORE with A
+				Memory[Address.Whole] = A;                             //store A at effective address
 			}
 		}
 		private void STA_ax_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				Memory[Address.Whole] = A;                         //add another cycle, read from effective address and STORE with A
+			if (Y > Address.Lower)                                     //if page crossed
+				Memory[Address.Whole] = A;                             //add another cycle and store A at effective address
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 
@@ -1145,19 +1147,19 @@ namespace K6502Emu
 		private void LDA_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
 		private void LDA_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
 		private void LDA_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
-		private void LDA_xi_5() => A = Memory[Address.Whole];            //read from effective address and LOAD with A
+		private void LDA_xi_5() => A = Memory[Address.Whole];             //load A from effective address
 
 		//A5 LDA zpg
 		private void LDA_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
-		private void LDA_d_2() => A = Memory[Address.Lower];         //read from zpg address and LOAD with A
+		private void LDA_d_2() => A = Memory[Address.Lower];          //load A from from zpg address
 
 		//A9 LDA #
-		private void LDA_im() => A = Memory[PC.Whole++]; //read operand, inc. PC and LOAD with A
+		private void LDA_im() => A = Memory[PC.Whole++]; //load A from operand and inc. PC
 
 		//AD LDA abs
 		private void LDA_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
 		private void LDA_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
-		private void LDA_a_3() => A = Memory[Address.Whole];         //read from effective address and LOAD with A
+		private void LDA_a_3() => A = Memory[Address.Whole];          //load A from effective address
 
 		//B1 LDA ind,y
 		private void LDA_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
@@ -1176,13 +1178,13 @@ namespace K6502Emu
 			}
 			else
 			{
-				A = Memory[Address.Whole];                         //read from effective address and LOAD with A
+				A = Memory[Address.Whole];                          //load A from effective address
 			}
 		}
 		private void LDA_iy_5()
 		{
 			if (Y > Address.Lower)                                  //if page crossed
-				A = Memory[Address.Whole];                         //add another cycle, read from effective address and LOAD with A
+				A = Memory[Address.Whole];                          //add another cycle and load A from effective address
 			else
 				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
 		}
@@ -1190,7 +1192,7 @@ namespace K6502Emu
 		//B5 LDA zpg,x
 		private void LDA_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
 		private void LDA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
-		private void LDA_dx_3() => A = Memory[Address.Lower];                        //read from address and LOAD with A
+		private void LDA_dx_3() => A = Memory[Address.Lower];                         //load A from address
 
 		//B9 LDA abs,y
 		private void LDA_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
@@ -1208,15 +1210,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				A = Memory[Address.Whole];                            //read from effective address and LOAD with A
+				A = Memory[Address.Whole];                             //load A from effective address
 			}
 		}
 		private void LDA_ay_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				A = Memory[Address.Whole];                         //add another cycle, read from effective address and LOAD with A
+			if (Y > Address.Lower)                                     //if page crossed
+				A = Memory[Address.Whole];                             //add another cycle and load A from effective address
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 		//BD LDA abs,x
@@ -1235,15 +1237,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				A = Memory[Address.Whole];                            //read from effective address and LOAD with A
+				A = Memory[Address.Whole];                             //load A from effective address
 			}
 		}
 		private void LDA_ax_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				A = Memory[Address.Whole];                         //add another cycle, read from effective address and LOAD with A
+			if (Y > Address.Lower)                                     //if page crossed
+				A = Memory[Address.Whole];                             //add another cycle and load A from effective address
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 
@@ -1252,19 +1254,19 @@ namespace K6502Emu
 		private void CMP_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
 		private void CMP_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
 		private void CMP_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
-		private void CMP_xi_5() => SetFlagsOnCompare(A, Memory[Address.Whole]);            //read from effective address and compare with A
+		private void CMP_xi_5() => DoCompare(A, Memory[Address.Whole]);   //read from effective address and compare with A
 
 		//C5 CMP zpg
-		private void CMP_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
-		private void CMP_d_2() => SetFlagsOnCompare(A, Memory[Address.Lower]);         //read from zpg address and compare with A
+		private void CMP_d_1() => Address.Lower = Memory[PC.Whole++];  //fetch zpg address
+		private void CMP_d_2() => DoCompare(A, Memory[Address.Lower]); //read from zpg address and compare with A
 
 		//C9 CMP #
-		private void CMP_im() => SetFlagsOnCompare(A, Memory[PC.Whole++]); //read operand, inc. PC and compare with A
+		private void CMP_im() => DoCompare(A, Memory[PC.Whole++]); //read operand, inc. PC and compare with A
 
 		//CD CMP abs
-		private void CMP_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
-		private void CMP_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
-		private void CMP_a_3() => SetFlagsOnCompare(A, Memory[Address.Whole]);         //read from effective address and compare with A
+		private void CMP_a_1() => Address.Lower = Memory[PC.Whole++];  //fetch address lower
+		private void CMP_a_2() => Address.Upper = Memory[PC.Whole++];  //fetch address upper
+		private void CMP_a_3() => DoCompare(A, Memory[Address.Whole]); //read from effective address and compare with A
 
 		//D1 CMP ind,y
 		private void CMP_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
@@ -1283,13 +1285,13 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //read from effective address and compare with A
+				DoCompare(A, Memory[Address.Whole]);                //read from effective address and compare with A
 			}
 		}
 		private void CMP_iy_5()
 		{
 			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //add another cycle, read from effective address and compare with A
+				DoCompare(A, Memory[Address.Whole]);                //add another cycle, read from effective address and compare with A
 			else
 				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
 		}
@@ -1297,7 +1299,7 @@ namespace K6502Emu
 		//D5 CMP zpg,x
 		private void CMP_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
 		private void CMP_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
-		private void CMP_dx_3() => SetFlagsOnCompare(A, Memory[Address.Lower]);                        //read from address and compare with A
+		private void CMP_dx_3() => DoCompare(A, Memory[Address.Lower]);               //read from address and compare with A
 
 		//D9 CMP abs,y
 		private void CMP_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
@@ -1315,15 +1317,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnCompare(A, Memory[Address.Whole]);                            //read from effective address and compare with A
+				DoCompare(A, Memory[Address.Whole]);                   //read from effective address and compare with A
 			}
 		}
 		private void CMP_ay_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //add another cycle, read from effective address and compare with A
+			if (Y > Address.Lower)                                     //if page crossed
+				DoCompare(A, Memory[Address.Whole]);                   //add another cycle, read from effective address and compare with A
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 		//DD CMP abs,x
@@ -1342,15 +1344,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnCompare(A, Memory[Address.Whole]);                            //read from effective address and compare with A
+				DoCompare(A, Memory[Address.Whole]);                   //read from effective address and compare with A
 			}
 		}
 		private void CMP_ax_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //add another cycle, read from effective address and compare with A
+			if (Y > Address.Lower)                                     //if page crossed
+				DoCompare(A, Memory[Address.Whole]);                   //add another cycle, read from effective address and compare with A
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 
@@ -1359,19 +1361,19 @@ namespace K6502Emu
 		private void SBC_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
 		private void SBC_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
 		private void SBC_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
-		private void SBC_xi_5() => SetFlagsOnSBC(Memory[Address.Whole]);            //read from effective address and subtract with A
+		private void SBC_xi_5() => DoSBC(Memory[Address.Whole]);          //read from effective address and perform subtraction
 
 		//E5 SBC zpg
 		private void SBC_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
-		private void SBC_d_2() => SetFlagsOnSBC(Memory[Address.Lower]);         //read from zpg address and subtract with A
+		private void SBC_d_2() => DoSBC(Memory[Address.Lower]);       //read from zpg address and perform subtraction
 
 		//E9 SBC #
-		private void SBC_im() => SetFlagsOnSBC(Memory[PC.Whole++]); //read operand, inc. PC and subtract with A
+		private void SBC_im() => DoSBC(Memory[PC.Whole++]); //read operand, inc. PC and perform subtraction
 
 		//ED SBC abs
 		private void SBC_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
 		private void SBC_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
-		private void SBC_a_3() => SetFlagsOnSBC(Memory[Address.Whole]);         //read from effective address and subtract with A
+		private void SBC_a_3() => DoSBC(Memory[Address.Whole]);       //read from effective address and perform subtraction
 
 		//F1 SBC ind,y
 		private void SBC_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
@@ -1390,13 +1392,13 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnSBC(Memory[Address.Whole]);                         //read from effective address and subtract with A
+				DoSBC(Memory[Address.Whole]);                       //read from effective address and perform subtraction
 			}
 		}
 		private void SBC_iy_5()
 		{
 			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnSBC(Memory[Address.Whole]);                         //add another cycle, read from effective address and subtract with A
+				DoSBC(Memory[Address.Whole]);                       //add another cycle, read from effective address and perform subtraction
 			else
 				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
 		}
@@ -1404,7 +1406,7 @@ namespace K6502Emu
 		//F5 SBC zpg,x
 		private void SBC_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
 		private void SBC_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
-		private void SBC_dx_3() => SetFlagsOnSBC(Memory[Address.Lower]);                        //read from address and subtract with A
+		private void SBC_dx_3() => DoSBC(Memory[Address.Lower]);                      //read from address and perform subtraction
 
 		//F9 SBC abs,y
 		private void SBC_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
@@ -1422,15 +1424,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnSBC(Memory[Address.Whole]);                            //read from effective address and subtract with A
+				DoSBC(Memory[Address.Whole]);                          //read from effective address and perform subtraction
 			}
 		}
 		private void SBC_ay_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnSBC(Memory[Address.Whole]);                         //add another cycle, read from effective address and subtract with A
+			if (Y > Address.Lower)                                     //if page crossed
+				DoSBC(Memory[Address.Whole]);                          //add another cycle, read from effective address and perform subtraction
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 		//FD SBC abs,x
@@ -1449,15 +1451,15 @@ namespace K6502Emu
 			}
 			else
 			{
-				SetFlagsOnSBC(Memory[Address.Whole]);                            //read from effective address and subtract with A
+				DoSBC(Memory[Address.Whole]);                          //read from effective address and perform subtraction
 			}
 		}
 		private void SBC_ax_4()
 		{
-			if (Y > Address.Lower)                                  //if page crossed
-				SetFlagsOnSBC(Memory[Address.Whole]);                         //add another cycle, read from effective address and subtract with A
+			if (Y > Address.Lower)                                     //if page crossed
+				DoSBC(Memory[Address.Whole]);                          //add another cycle, read from effective address and perform subtraction
 			else
-				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+				CYCLE_0();                                             //don't add another cycle, do cycle 0 of next instruction
 		}
 
 
