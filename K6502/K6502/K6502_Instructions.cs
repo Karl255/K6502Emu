@@ -16,6 +16,7 @@ namespace K6502Emu
 	{
 		private void InitInstructions()
 		{
+			//control instructions (mostly)
 			Instructions[0x00] = new Action[] { CYCLE_0, BRK_1   , BRK_2   , BRK_3   , BRK_4,    BRK_5,    BRK_6     };
 			Instructions[0x04] = new Action[] { CYCLE_0, NOP_d_1 , NOP_d_2                                           };
 			Instructions[0x08] = new Action[] { CYCLE_0, PHP_1   , PHP_2                                             };
@@ -87,6 +88,80 @@ namespace K6502Emu
 			Instructions[0xF4] = new Action[] { CYCLE_0, NOP_dx_1, NOP_dx_2, NOP_dx_3                                };
 			Instructions[0xF8] = new Action[] { CYCLE_0, SED                                                         };
 			Instructions[0xFC] = new Action[] { CYCLE_0, NOP_ax_1, NOP_ax_2, NOP_ax_3, NOP_ax_4                      };
+
+			//ALU instructions (mostly)
+			Instructions[0x01] = new Action[] { CYCLE_0, ORA_xi_1, ORA_xi_2, ORA_xi_3, ORA_xi_4, ORA_xi_5            };
+			Instructions[0x05] = new Action[] { CYCLE_0, ORA_d_1 , ORA_d_2                                           };
+			Instructions[0x09] = new Action[] { CYCLE_0, ORA_im                                                      };
+			Instructions[0x0D] = new Action[] { CYCLE_0, ORA_a_1 , ORA_a_2 , ORA_a_3                                 };
+			Instructions[0x11] = new Action[] { CYCLE_0, ORA_iy_1, ORA_iy_2, ORA_iy_3, ORA_iy_4, ORA_iy_5            };
+			Instructions[0x15] = new Action[] { CYCLE_0, ORA_dx_1, ORA_dx_2, ORA_dx_3                                };
+			Instructions[0x19] = new Action[] { CYCLE_0, ORA_ay_1, ORA_ay_2, ORA_ay_3, ORA_ay_4                      };
+			Instructions[0x1D] = new Action[] { CYCLE_0, ORA_ax_1, ORA_ax_2, ORA_ax_3, ORA_ax_4                      };
+
+			Instructions[0x21] = new Action[] { CYCLE_0, AND_xi_1, AND_xi_2, AND_xi_3, AND_xi_4, AND_xi_5            };
+			Instructions[0x25] = new Action[] { CYCLE_0, AND_d_1 , AND_d_2                                           };
+			Instructions[0x29] = new Action[] { CYCLE_0, AND_im                                                      };
+			Instructions[0x2D] = new Action[] { CYCLE_0, AND_a_1 , AND_a_2 , AND_a_3                                 };
+			Instructions[0x31] = new Action[] { CYCLE_0, AND_iy_1, AND_iy_2, AND_iy_3, AND_iy_4, AND_iy_5            };
+			Instructions[0x35] = new Action[] { CYCLE_0, AND_dx_1, AND_dx_2, AND_dx_3                                };
+			Instructions[0x39] = new Action[] { CYCLE_0, AND_ay_1, AND_ay_2, AND_ay_3, AND_ay_4                      };
+			Instructions[0x3D] = new Action[] { CYCLE_0, AND_ax_1, AND_ax_2, AND_ax_3, AND_ax_4                      };
+
+			Instructions[0x41] = new Action[] { CYCLE_0, EOR_xi_1, EOR_xi_2, EOR_xi_3, EOR_xi_4, EOR_xi_5            };
+			Instructions[0x45] = new Action[] { CYCLE_0, EOR_d_1 , EOR_d_2                                           };
+			Instructions[0x49] = new Action[] { CYCLE_0, EOR_im                                                      };
+			Instructions[0x4D] = new Action[] { CYCLE_0, EOR_a_1 , EOR_a_2 , EOR_a_3                                 };
+			Instructions[0x51] = new Action[] { CYCLE_0, EOR_iy_1, EOR_iy_2, EOR_iy_3, EOR_iy_4, EOR_iy_5            };
+			Instructions[0x55] = new Action[] { CYCLE_0, EOR_dx_1, EOR_dx_2, EOR_dx_3                                };
+			Instructions[0x59] = new Action[] { CYCLE_0, EOR_ay_1, EOR_ay_2, EOR_ay_3, EOR_ay_4                      };
+			Instructions[0x5D] = new Action[] { CYCLE_0, EOR_ax_1, EOR_ax_2, EOR_ax_3, EOR_ax_4                      };
+
+			Instructions[0x61] = new Action[] { CYCLE_0, ADC_xi_1, ADC_xi_2, ADC_xi_3, ADC_xi_4, ADC_xi_5            };
+			Instructions[0x65] = new Action[] { CYCLE_0, ADC_d_1 , ADC_d_2                                           };
+			Instructions[0x69] = new Action[] { CYCLE_0, ADC_im                                                      };
+			Instructions[0x6D] = new Action[] { CYCLE_0, ADC_a_1 , ADC_a_2 , ADC_a_3                                 };
+			Instructions[0x71] = new Action[] { CYCLE_0, ADC_iy_1, ADC_iy_2, ADC_iy_3, ADC_iy_4, ADC_iy_5            };
+			Instructions[0x75] = new Action[] { CYCLE_0, ADC_dx_1, ADC_dx_2, ADC_dx_3                                };
+			Instructions[0x79] = new Action[] { CYCLE_0, ADC_ay_1, ADC_ay_2, ADC_ay_3, ADC_ay_4                      };
+			Instructions[0x7D] = new Action[] { CYCLE_0, ADC_ax_1, ADC_ax_2, ADC_ax_3, ADC_ax_4                      };
+
+			Instructions[0x81] = new Action[] { CYCLE_0, STA_xi_1, STA_xi_2, STA_xi_3, STA_xi_4, STA_xi_5            };
+			Instructions[0x85] = new Action[] { CYCLE_0, STA_d_1 , STA_d_2                                           };
+			Instructions[0x89] = new Action[] { CYCLE_0, STA_im                                                      };
+			Instructions[0x8D] = new Action[] { CYCLE_0, STA_a_1 , STA_a_2 , STA_a_3                                 };
+			Instructions[0x91] = new Action[] { CYCLE_0, STA_iy_1, STA_iy_2, STA_iy_3, STA_iy_4, STA_iy_5            };
+			Instructions[0x95] = new Action[] { CYCLE_0, STA_dx_1, STA_dx_2, STA_dx_3                                };
+			Instructions[0x99] = new Action[] { CYCLE_0, STA_ay_1, STA_ay_2, STA_ay_3, STA_ay_4                      };
+			Instructions[0x9D] = new Action[] { CYCLE_0, STA_ax_1, STA_ax_2, STA_ax_3, STA_ax_4                      };
+
+			Instructions[0xA1] = new Action[] { CYCLE_0, LDA_xi_1, LDA_xi_2, LDA_xi_3, LDA_xi_4, LDA_xi_5            };
+			Instructions[0xA5] = new Action[] { CYCLE_0, LDA_d_1 , LDA_d_2                                           };
+			Instructions[0xA9] = new Action[] { CYCLE_0, LDA_im                                                      };
+			Instructions[0xAD] = new Action[] { CYCLE_0, LDA_a_1 , LDA_a_2 , LDA_a_3                                 };
+			Instructions[0xB1] = new Action[] { CYCLE_0, LDA_iy_1, LDA_iy_2, LDA_iy_3, LDA_iy_4, LDA_iy_5            };
+			Instructions[0xB5] = new Action[] { CYCLE_0, LDA_dx_1, LDA_dx_2, LDA_dx_3                                };
+			Instructions[0xB9] = new Action[] { CYCLE_0, LDA_ay_1, LDA_ay_2, LDA_ay_3, LDA_ay_4                      };
+			Instructions[0xBD] = new Action[] { CYCLE_0, LDA_ax_1, LDA_ax_2, LDA_ax_3, LDA_ax_4                      };
+
+			Instructions[0xC1] = new Action[] { CYCLE_0, CMP_xi_1, CMP_xi_2, CMP_xi_3, CMP_xi_4, CMP_xi_5            };
+			Instructions[0xC5] = new Action[] { CYCLE_0, CMP_d_1 , CMP_d_2                                           };
+			Instructions[0xC9] = new Action[] { CYCLE_0, CMP_im                                                      };
+			Instructions[0xCD] = new Action[] { CYCLE_0, CMP_a_1 , CMP_a_2 , CMP_a_3                                 };
+			Instructions[0xD1] = new Action[] { CYCLE_0, CMP_iy_1, CMP_iy_2, CMP_iy_3, CMP_iy_4, CMP_iy_5            };
+			Instructions[0xD5] = new Action[] { CYCLE_0, CMP_dx_1, CMP_dx_2, CMP_dx_3                                };
+			Instructions[0xD9] = new Action[] { CYCLE_0, CMP_ay_1, CMP_ay_2, CMP_ay_3, CMP_ay_4                      };
+			Instructions[0xDD] = new Action[] { CYCLE_0, CMP_ax_1, CMP_ax_2, CMP_ax_3, CMP_ax_4                      };
+
+			Instructions[0xE1] = new Action[] { CYCLE_0, SBC_xi_1, SBC_xi_2, SBC_xi_3, SBC_xi_4, SBC_xi_5            };
+			Instructions[0xE5] = new Action[] { CYCLE_0, SBC_d_1 , SBC_d_2                                           };
+			Instructions[0xE9] = new Action[] { CYCLE_0, SBC_im                                                      };
+			Instructions[0xED] = new Action[] { CYCLE_0, SBC_a_1 , SBC_a_2 , SBC_a_3                                 };
+			Instructions[0xF1] = new Action[] { CYCLE_0, SBC_iy_1, SBC_iy_2, SBC_iy_3, SBC_iy_4, SBC_iy_5            };
+			Instructions[0xF5] = new Action[] { CYCLE_0, SBC_dx_1, SBC_dx_2, SBC_dx_3                                };
+			Instructions[0xF9] = new Action[] { CYCLE_0, SBC_ay_1, SBC_ay_2, SBC_ay_3, SBC_ay_4                      };
+			Instructions[0xFD] = new Action[] { CYCLE_0, SBC_ax_1, SBC_ax_2, SBC_ax_3, SBC_ax_4                      };
+
 		}
 
 		//cycle 0 for all instructions
@@ -528,70 +603,865 @@ namespace K6502Emu
 
 		/* ALU operations */
 
-		//01
-		//05
-		//09
-		//0D
-		//11
-		//15
-		//19
-		//1D
-		//21
-		//25
-		//29
-		//2D
-		//31
-		//35
-		//39
-		//3D
-		//41
-		//45
-		//49
-		//4D
-		//51
-		//55
-		//59
-		//5D
-		//61
-		//65
-		//69
-		//6D
-		//71
-		//75
-		//79
-		//7D
-		//81
-		//85
-		//89
-		//8D
-		//91
-		//95
-		//99
-		//9D
-		//A1
-		//A5
-		//A9
-		//AD
-		//B1
-		//B5
-		//B9
-		//BD
-		//C1
-		//C5
-		//C9
-		//CD
-		//D1
-		//D5
-		//D9
-		//DD
-		//E1
-		//E5
-		//E9
-		//ED
-		//F1
-		//F5
-		//F9
-		//FD
+		//01 ORA x,ind
+		private void ORA_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void ORA_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void ORA_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void ORA_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void ORA_xi_5() => A |= Memory[Address.Whole];            //read from effective address and OR with A
+
+		//05 ORA zpg
+		private void ORA_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void ORA_d_2() => A |= Memory[Address.Lower];         //read from zpg address and OR with A
+
+		//09 ORA #
+		private void ORA_im() => A |= Memory[PC.Whole++]; //read operand, inc. PC and OR with A
+
+		//0D ORA abs
+		private void ORA_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void ORA_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void ORA_a_3() => A |= Memory[Address.Whole];         //read from effective address and OR with A
+
+		//11 ORA ind,y
+		private void ORA_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void ORA_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void ORA_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void ORA_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				A |= Memory[Address.Whole];                         //read from effective address and OR with A
+			}
+		}
+		private void ORA_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A |= Memory[Address.Whole];                         //add another cycle, read from effective address and OR with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//15 ORA zpg,x
+		private void ORA_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void ORA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void ORA_dx_3() => A |= Memory[Address.Lower];                        //read from address and OR with A
+
+		//19 ORA abs,y
+		private void ORA_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void ORA_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void ORA_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A |= Memory[Address.Whole];                            //read from effective address and OR with A
+			}
+		}
+		private void ORA_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A |= Memory[Address.Whole];                         //add another cycle, read from effective address and OR with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//1D ORA abs,x
+		private void ORA_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void ORA_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void ORA_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A |= Memory[Address.Whole];                            //read from effective address and OR with A
+			}
+		}
+		private void ORA_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A |= Memory[Address.Whole];                         //add another cycle, read from effective address and OR with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//the following code (until the RMW instructions) was automatically generated
+
+		//21 AND x,ind
+		private void AND_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void AND_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void AND_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void AND_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void AND_xi_5() => A &= Memory[Address.Whole];            //read from effective address and AND with A
+
+		//25 AND zpg
+		private void AND_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void AND_d_2() => A &= Memory[Address.Lower];         //read from zpg address and AND with A
+
+		//29 AND #
+		private void AND_im() => A &= Memory[PC.Whole++]; //read operand, inc. PC and AND with A
+
+		//2D AND abs
+		private void AND_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void AND_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void AND_a_3() => A &= Memory[Address.Whole];         //read from effective address and AND with A
+
+		//31 AND ind,y
+		private void AND_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void AND_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void AND_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void AND_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				A &= Memory[Address.Whole];                         //read from effective address and AND with A
+			}
+		}
+		private void AND_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A &= Memory[Address.Whole];                         //add another cycle, read from effective address and AND with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//35 AND zpg,x
+		private void AND_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void AND_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void AND_dx_3() => A &= Memory[Address.Lower];                        //read from address and AND with A
+
+		//39 AND abs,y
+		private void AND_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void AND_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void AND_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A &= Memory[Address.Whole];                            //read from effective address and AND with A
+			}
+		}
+		private void AND_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A &= Memory[Address.Whole];                         //add another cycle, read from effective address and AND with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//3D AND abs,x
+		private void AND_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void AND_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void AND_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A &= Memory[Address.Whole];                            //read from effective address and AND with A
+			}
+		}
+		private void AND_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A &= Memory[Address.Whole];                         //add another cycle, read from effective address and AND with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//41 EOR x,ind
+		private void EOR_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void EOR_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void EOR_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void EOR_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void EOR_xi_5() => A ^= Memory[Address.Whole];            //read from effective address and XOR with A
+
+		//45 EOR zpg
+		private void EOR_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void EOR_d_2() => A ^= Memory[Address.Lower];         //read from zpg address and XOR with A
+
+		//49 EOR #
+		private void EOR_im() => A ^= Memory[PC.Whole++]; //read operand, inc. PC and XOR with A
+
+		//4D EOR abs
+		private void EOR_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void EOR_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void EOR_a_3() => A ^= Memory[Address.Whole];         //read from effective address and XOR with A
+
+		//51 EOR ind,y
+		private void EOR_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void EOR_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void EOR_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void EOR_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				A ^= Memory[Address.Whole];                         //read from effective address and XOR with A
+			}
+		}
+		private void EOR_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A ^= Memory[Address.Whole];                         //add another cycle, read from effective address and XOR with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//55 EOR zpg,x
+		private void EOR_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void EOR_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void EOR_dx_3() => A ^= Memory[Address.Lower];                        //read from address and XOR with A
+
+		//59 EOR abs,y
+		private void EOR_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void EOR_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void EOR_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A ^= Memory[Address.Whole];                            //read from effective address and XOR with A
+			}
+		}
+		private void EOR_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A ^= Memory[Address.Whole];                         //add another cycle, read from effective address and XOR with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//5D EOR abs,x
+		private void EOR_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void EOR_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void EOR_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A ^= Memory[Address.Whole];                            //read from effective address and XOR with A
+			}
+		}
+		private void EOR_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A ^= Memory[Address.Whole];                         //add another cycle, read from effective address and XOR with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//61 ADC x,ind
+		private void ADC_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void ADC_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void ADC_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void ADC_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void ADC_xi_5() => SetFlagsOnADC(Memory[Address.Whole]);            //read from effective address and add with A
+
+		//65 ADC zpg
+		private void ADC_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void ADC_d_2() => SetFlagsOnADC(Memory[Address.Lower]);         //read from zpg address and add with A
+
+		//69 ADC #
+		private void ADC_im() => SetFlagsOnADC(Memory[PC.Whole++]); //read operand, inc. PC and add with A
+
+		//6D ADC abs
+		private void ADC_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void ADC_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void ADC_a_3() => SetFlagsOnADC(Memory[Address.Whole]);         //read from effective address and add with A
+
+		//71 ADC ind,y
+		private void ADC_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void ADC_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void ADC_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void ADC_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnADC(Memory[Address.Whole]);                         //read from effective address and add with A
+			}
+		}
+		private void ADC_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnADC(Memory[Address.Whole]);                         //add another cycle, read from effective address and add with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//75 ADC zpg,x
+		private void ADC_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void ADC_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void ADC_dx_3() => SetFlagsOnADC(Memory[Address.Lower]);                        //read from address and add with A
+
+		//79 ADC abs,y
+		private void ADC_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void ADC_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void ADC_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnADC(Memory[Address.Whole]);                            //read from effective address and add with A
+			}
+		}
+		private void ADC_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnADC(Memory[Address.Whole]);                         //add another cycle, read from effective address and add with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//7D ADC abs,x
+		private void ADC_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void ADC_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void ADC_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnADC(Memory[Address.Whole]);                            //read from effective address and add with A
+			}
+		}
+		private void ADC_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnADC(Memory[Address.Whole]);                         //add another cycle, read from effective address and add with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//81 STA x,ind
+		private void STA_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void STA_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void STA_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void STA_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void STA_xi_5() => Memory[Address.Whole] = A;            //read from effective address and STORE with A
+
+		//85 STA zpg
+		private void STA_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void STA_d_2() => Memory[Address.Lower] = A;         //read from zpg address and STORE with A
+
+		//89 STA #
+		private void STA_im() => Memory[PC.Whole++] = A; //read operand, inc. PC and STORE with A
+
+		//8D STA abs
+		private void STA_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void STA_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void STA_a_3() => Memory[Address.Whole] = A;         //read from effective address and STORE with A
+
+		//91 STA ind,y
+		private void STA_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void STA_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void STA_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void STA_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				Memory[Address.Whole] = A;                         //read from effective address and STORE with A
+			}
+		}
+		private void STA_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				Memory[Address.Whole] = A;                         //add another cycle, read from effective address and STORE with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//95 STA zpg,x
+		private void STA_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void STA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void STA_dx_3() => Memory[Address.Lower] = A;                        //read from address and STORE with A
+
+		//99 STA abs,y
+		private void STA_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void STA_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void STA_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				Memory[Address.Whole] = A;                            //read from effective address and STORE with A
+			}
+		}
+		private void STA_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				Memory[Address.Whole] = A;                         //add another cycle, read from effective address and STORE with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//9D STA abs,x
+		private void STA_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void STA_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void STA_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				Memory[Address.Whole] = A;                            //read from effective address and STORE with A
+			}
+		}
+		private void STA_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				Memory[Address.Whole] = A;                         //add another cycle, read from effective address and STORE with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//A1 LDA x,ind
+		private void LDA_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void LDA_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void LDA_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void LDA_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void LDA_xi_5() => A = Memory[Address.Whole];            //read from effective address and LOAD with A
+
+		//A5 LDA zpg
+		private void LDA_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void LDA_d_2() => A = Memory[Address.Lower];         //read from zpg address and LOAD with A
+
+		//A9 LDA #
+		private void LDA_im() => A = Memory[PC.Whole++]; //read operand, inc. PC and LOAD with A
+
+		//AD LDA abs
+		private void LDA_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void LDA_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void LDA_a_3() => A = Memory[Address.Whole];         //read from effective address and LOAD with A
+
+		//B1 LDA ind,y
+		private void LDA_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void LDA_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void LDA_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void LDA_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				A = Memory[Address.Whole];                         //read from effective address and LOAD with A
+			}
+		}
+		private void LDA_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A = Memory[Address.Whole];                         //add another cycle, read from effective address and LOAD with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//B5 LDA zpg,x
+		private void LDA_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void LDA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void LDA_dx_3() => A = Memory[Address.Lower];                        //read from address and LOAD with A
+
+		//B9 LDA abs,y
+		private void LDA_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void LDA_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void LDA_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A = Memory[Address.Whole];                            //read from effective address and LOAD with A
+			}
+		}
+		private void LDA_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A = Memory[Address.Whole];                         //add another cycle, read from effective address and LOAD with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//BD LDA abs,x
+		private void LDA_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void LDA_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void LDA_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				A = Memory[Address.Whole];                            //read from effective address and LOAD with A
+			}
+		}
+		private void LDA_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				A = Memory[Address.Whole];                         //add another cycle, read from effective address and LOAD with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//C1 CMP x,ind
+		private void CMP_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void CMP_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void CMP_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void CMP_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void CMP_xi_5() => SetFlagsOnCompare(A, Memory[Address.Whole]);            //read from effective address and compare with A
+
+		//C5 CMP zpg
+		private void CMP_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void CMP_d_2() => SetFlagsOnCompare(A, Memory[Address.Lower]);         //read from zpg address and compare with A
+
+		//C9 CMP #
+		private void CMP_im() => SetFlagsOnCompare(A, Memory[PC.Whole++]); //read operand, inc. PC and compare with A
+
+		//CD CMP abs
+		private void CMP_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void CMP_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void CMP_a_3() => SetFlagsOnCompare(A, Memory[Address.Whole]);         //read from effective address and compare with A
+
+		//D1 CMP ind,y
+		private void CMP_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void CMP_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void CMP_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void CMP_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //read from effective address and compare with A
+			}
+		}
+		private void CMP_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //add another cycle, read from effective address and compare with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//D5 CMP zpg,x
+		private void CMP_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void CMP_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void CMP_dx_3() => SetFlagsOnCompare(A, Memory[Address.Lower]);                        //read from address and compare with A
+
+		//D9 CMP abs,y
+		private void CMP_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void CMP_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void CMP_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnCompare(A, Memory[Address.Whole]);                            //read from effective address and compare with A
+			}
+		}
+		private void CMP_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //add another cycle, read from effective address and compare with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//DD CMP abs,x
+		private void CMP_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void CMP_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void CMP_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnCompare(A, Memory[Address.Whole]);                            //read from effective address and compare with A
+			}
+		}
+		private void CMP_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnCompare(A, Memory[Address.Whole]);                         //add another cycle, read from effective address and compare with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+		//E1 SBC x,ind
+		private void SBC_xi_1() => Operand = Memory[PC.Whole++];          //fetch pointer address, inc. PC
+		private void SBC_xi_2() => Operand = (byte)(Memory[Operand] + X); //read from pointer and add X to it
+		private void SBC_xi_3() => Address.Lower = Memory[Operand];       //fetch effective address low
+		private void SBC_xi_4() => Address.Upper = Memory[Operand];       //fetch effective address high
+		private void SBC_xi_5() => SetFlagsOnSBC(Memory[Address.Whole]);            //read from effective address and subtract with A
+
+		//E5 SBC zpg
+		private void SBC_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void SBC_d_2() => SetFlagsOnSBC(Memory[Address.Lower]);         //read from zpg address and subtract with A
+
+		//E9 SBC #
+		private void SBC_im() => SetFlagsOnSBC(Memory[PC.Whole++]); //read operand, inc. PC and subtract with A
+
+		//ED SBC abs
+		private void SBC_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void SBC_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void SBC_a_3() => SetFlagsOnSBC(Memory[Address.Whole]);         //read from effective address and subtract with A
+
+		//F1 SBC ind,y
+		private void SBC_iy_1() => Operand = Memory[PC.Whole++];    //fetch pointer address
+		private void SBC_iy_2() => Address.Lower = Memory[Operand]; //fetch effective address lower
+		private void SBC_iy_3()
+		{
+			Address.Upper = Memory[Operand + 1];                    //fetch effective address upper
+			Address.Lower += Y;                                     //add Y to address lower
+		}
+		private void SBC_iy_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+			{
+				_ = Memory[Address.Whole];                          //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                    //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnSBC(Memory[Address.Whole]);                         //read from effective address and subtract with A
+			}
+		}
+		private void SBC_iy_5()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnSBC(Memory[Address.Whole]);                         //add another cycle, read from effective address and subtract with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//F5 SBC zpg,x
+		private void SBC_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void SBC_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
+		private void SBC_dx_3() => SetFlagsOnSBC(Memory[Address.Lower]);                        //read from address and subtract with A
+
+		//F9 SBC abs,y
+		private void SBC_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void SBC_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void SBC_ay_3()
+		{
+			if (Y > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnSBC(Memory[Address.Whole]);                            //read from effective address and subtract with A
+			}
+		}
+		private void SBC_ay_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnSBC(Memory[Address.Whole]);                         //add another cycle, read from effective address and subtract with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+		//FD SBC abs,x
+		private void SBC_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void SBC_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void SBC_ax_3()
+		{
+			if (X > Address.Lower)                                     //if page crossed
+			{
+				_ = Memory[Address.Whole];                             //read from effective address (throw away, because it's invalid)
+				Address.Upper++;                                       //fix upper byte of address
+			}
+			else
+			{
+				SetFlagsOnSBC(Memory[Address.Whole]);                            //read from effective address and subtract with A
+			}
+		}
+		private void SBC_ax_4()
+		{
+			if (Y > Address.Lower)                                  //if page crossed
+				SetFlagsOnSBC(Memory[Address.Whole]);                         //add another cycle, read from effective address and subtract with A
+			else
+				CYCLE_0();                                          //don't add another cycle, do cycle 0 of next instruction
+		}
+
+
+
 
 		/* RMW operations */
 

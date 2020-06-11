@@ -58,5 +58,15 @@ namespace K6502Emu
 			P.Zero = reg == val;
 			P.Negative = reg - val < 0;
 		}
+
+		private void SetFlagsOnADC(byte val)
+		{
+
+		}
+
+		private void SetFlagsOnSBC(byte val)
+		{
+
+		}
 	}
 }
