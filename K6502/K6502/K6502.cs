@@ -5,25 +5,25 @@ namespace K6502Emu
 	public partial class K6502
 	{
 		//the flags zero and negative are set/cleared when A/X/Y get loaded in any way
-		private byte A { get => _a; set => _a = SetFlagsOnLoad(value); }
-		private byte X { get => _x; set => _x = SetFlagsOnLoad(value); }
-		private byte Y { get => _y; set => _y = SetFlagsOnLoad(value); }
+		protected byte A { get => _a; set => _a = SetFlagsOnLoad(value); }
+		protected byte X { get => _x; set => _x = SetFlagsOnLoad(value); }
+		protected byte Y { get => _y; set => _y = SetFlagsOnLoad(value); }
 		private byte _a = 0;
 		private byte _x = 0;
 		private byte _y = 0;
 
-		private byte S; //stack pointer
-		private StatusRegister P = new StatusRegister();
-		private DoubleRegister PC = new DoubleRegister { Whole = 0 }; //program counter
-		private DoubleRegister Address = new DoubleRegister { Whole = 0 };
+		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
+		protected DoubleRegister PC = new DoubleRegister { Whole = 0 }; //program counter
+		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
+		protected byte S; //stack pointer
+		protected byte Operand = 0; //a register where instructions store internal data
 
-		private byte _opCode = 0;
-		private byte OpCode { get => _opCode; set { _opCode = value; OpCodeCycle = 1; } }
-		private byte Operand = 0;
+		protected Action[][] Instructions = new Action[256][];
+		protected ComponentBus Memory;
+
 		private int OpCodeCycle = 0;
-
-		private Action[][] Instructions = new Action[256][];
-		private ComponentBus Memory;
+		private byte OpCode { get => _opCode; set { _opCode = value; OpCodeCycle = 1; } }
+		private byte _opCode = 0;
 
 		public K6502(ComponentBus bus)
 		{
@@ -43,6 +43,7 @@ namespace K6502Emu
 
 		}
 
+		//helper methods for instructions
 		private byte SetFlagsOnLoad(byte val)
 		{
 			P.Zero = val == 0;
