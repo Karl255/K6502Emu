@@ -13,7 +13,7 @@ namespace K6502Emu
 		private byte _y = 0;
 
 		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
-		protected DoubleRegister PC = new DoubleRegister { Whole = 0 }; //program counter
+		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; //program counter
 		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
 		protected byte S; //stack pointer
 		protected byte Operand = 0; //a register where instructions store internal data
@@ -21,9 +21,8 @@ namespace K6502Emu
 		protected Action[][] Instructions = new Action[256][];
 		protected ComponentBus Memory;
 
-		private int OpCodeCycle = 0;
-		private byte OpCode { get => _opCode; set { _opCode = value; OpCodeCycle = 1; } }
-		private byte _opCode = 0;
+		private int OpCodeCycle = 1;
+		private byte OpCode = 0x4C; //JMP abs at cycle 1
 
 		public K6502(ComponentBus bus)
 		{
@@ -40,7 +39,6 @@ namespace K6502Emu
 
 			Instructions[OpCode][OpCodeCycle]();
 			OpCodeCycle++;
-
 		}
 
 		//helper methods for instructions
@@ -70,6 +68,7 @@ namespace K6502Emu
 
 			int t = A + val + carry;          //sum them all as ints
 			P.Overflow = t > 127 || t < -128; //then see if the result is outside the sbyte range
+
 			//Zero and Negative are automatically set in SetFlagsOnLoad()
 		}
 
@@ -83,6 +82,7 @@ namespace K6502Emu
 
 			int t = A - val - borrow;         //sum them all as ints
 			P.Overflow = t > 127 || t < -128; //then see if the result is outside the sbyte range
+
 			//Zero and Negative are automatically set in SetFlagsOnLoad()
 		}
 

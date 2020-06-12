@@ -9,6 +9,7 @@
  */
 
 using System;
+using System.Diagnostics;
 
 namespace K6502Emu
 {
@@ -235,7 +236,7 @@ namespace K6502Emu
 			Instructions[0xFA] = new Action[] { CYCLE_0, NOP                                                         };
 			Instructions[0xFE] = new Action[] { CYCLE_0, INC_ax_1, INC_ax_2, INC_ax_3, INC_ax_4, INC_ax_5, INC_ax_6  };
 
-			for (int i = 3; i < 0xff; i += 4)
+			for (int i = 3; i <= 0xff; i += 4)
 			{
 				Instructions[i] = new Action[] { CYCLE_0, NOP };
 			}
@@ -245,6 +246,7 @@ namespace K6502Emu
 		private void CYCLE_0()
 		{
 			//TODO: handle interrupts here
+			OpCodeCycle = 0; //this may be called from non-0 cycles, so make sure it is the 0th cycle
 			OpCode = Memory[PC.Whole++]; //fetch opcode, inc. PC
 		}
 
@@ -1547,7 +1549,11 @@ namespace K6502Emu
 
 		//02, 12, 22, 32, 42, 52, 62, 72, 92, B2, D2, F2
 		//*STP TODO: implement
-		private void STP() => throw new NotImplementedException();
+		private void STP()
+		{
+			/*throw new NotImplementedException();*/
+			Debug.WriteLine($"STP is not implemented: ${PC.Whole - 1 :X4}");
+		}
 
 		//06 ASL zpg
 		private void ASL_z_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address, inc. PC
