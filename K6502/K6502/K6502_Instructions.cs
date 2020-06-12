@@ -199,8 +199,41 @@ namespace K6502Emu
 			Instructions[0x7A] = new Action[] { CYCLE_0, NOP                                                         };
 			Instructions[0x7E] = new Action[] { CYCLE_0, ROR_ax_1, ROR_ax_2, ROR_ax_3, ROR_ax_4, ROR_ax_5, ROR_ax_6  };
 
+			Instructions[0x82] = new Action[] { CYCLE_0, NOP_im                                                      };
+			Instructions[0x86] = new Action[] { CYCLE_0, STX_z_1 , STX_z_2                                           };
+			Instructions[0x8A] = new Action[] { CYCLE_0, TXA                                                         };
+			Instructions[0x8E] = new Action[] { CYCLE_0, STX_a_1 , STX_a_2 , STX_a_3                                 };
+			Instructions[0x92] = new Action[] { CYCLE_0, STP                                                         };
+			Instructions[0x96] = new Action[] { CYCLE_0, STX_zy_1, STX_zy_2, STX_zy_3                                };
+			Instructions[0x9A] = new Action[] { CYCLE_0, TXS                                                         };
+			Instructions[0x9E] = new Action[] { CYCLE_0, SHX_ax_1, SHX_ax_2, SHX_ax_3, SHX_ax_4                      };
+			
+			Instructions[0xA2] = new Action[] { CYCLE_0, LDX_im                                                      };
+			Instructions[0xA6] = new Action[] { CYCLE_0, LDX_z_1 , LDX_z_2                                           };
+			Instructions[0xAA] = new Action[] { CYCLE_0, TAX                                                         };
+			Instructions[0xAE] = new Action[] { CYCLE_0, LDX_a_1 , LDX_a_2 , LDX_a_3                                 };
+			Instructions[0xB2] = new Action[] { CYCLE_0, STP                                                         };
+			Instructions[0xB6] = new Action[] { CYCLE_0, LDX_zy_1, LDX_zy_2, LDX_zy_3                                };
+			Instructions[0xBA] = new Action[] { CYCLE_0, TSX                                                         };
+			Instructions[0xBE] = new Action[] { CYCLE_0, LDX_ay_1, LDX_ay_2, LDX_ay_3, LDX_ay_4                      };
 
-
+			Instructions[0xC2] = new Action[] { CYCLE_0, NOP_im                                                      };
+			Instructions[0x66] = new Action[] { CYCLE_0, DEC_z_1 , DEC_z_2 , DEC_z_3 , DEC_z_4                       };
+			Instructions[0x6A] = new Action[] { CYCLE_0, DEX                                                         };
+			Instructions[0x6E] = new Action[] { CYCLE_0, DEC_a_1 , DEC_a_2 , DEC_a_3 , DEC_a_4 , DEC_a_5             };
+			Instructions[0x72] = new Action[] { CYCLE_0, STP                                                         };
+			Instructions[0x76] = new Action[] { CYCLE_0, DEC_zx_1, DEC_zx_2, DEC_zx_3, DEC_zx_4, DEC_zx_5            };
+			Instructions[0x7A] = new Action[] { CYCLE_0, NOP                                                         };
+			Instructions[0x7E] = new Action[] { CYCLE_0, DEC_ax_1, DEC_ax_2, DEC_ax_3, DEC_ax_4, DEC_ax_5, DEC_ax_6  };
+			
+			Instructions[0xC2] = new Action[] { CYCLE_0, NOP_im                                                      };
+			Instructions[0x66] = new Action[] { CYCLE_0, INC_z_1 , INC_z_2 , INC_z_3 , INC_z_4                       };
+			Instructions[0x6A] = new Action[] { CYCLE_0, NOP                                                         };
+			Instructions[0x6E] = new Action[] { CYCLE_0, INC_a_1 , INC_a_2 , INC_a_3 , INC_a_4 , INC_a_5             };
+			Instructions[0x72] = new Action[] { CYCLE_0, STP                                                         };
+			Instructions[0x76] = new Action[] { CYCLE_0, INC_zx_1, INC_zx_2, INC_zx_3, INC_zx_4, INC_zx_5            };
+			Instructions[0x7A] = new Action[] { CYCLE_0, NOP                                                         };
+			Instructions[0x7E] = new Action[] { CYCLE_0, INC_ax_1, INC_ax_2, INC_ax_3, INC_ax_4, INC_ax_5, INC_ax_6  };
 
 		}
 
@@ -435,7 +468,8 @@ namespace K6502Emu
 		//78 SEI
 		private void SEI() => P.Interrupt = true; //set interrupt disable flag
 
-		//80 *NOP #
+		//80, 82, C2, E2
+		//*NOP #
 		private void NOP_im() => _ = Memory[PC.Whole++]; //read operand (throw away)
 
 		//84 STY zpg
@@ -498,7 +532,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = (byte)(Y & (Address.Upper + 1));   //write to effective address
 
 		//A0 LDY #
-		private void LDY_im() => Y = Memory[PC.Whole++]; //load Y from operand, inc. PC
+		private void LDY_im() => Y = Memory[PC.Whole++]; //load Y from immediate, inc. PC
 
 		//A4 LDY zpg
 		private void LDY_d_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
@@ -1125,7 +1159,7 @@ namespace K6502Emu
 		//95 STA zpg,x
 		private void STA_dx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
 		private void STA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read operand from address and add X to it
-		private void STA_dx_3() => Memory[Address.Lower] = A;                         //store A at address
+		private void STA_dx_3() => Memory[Address.Lower] = A;                         //store A at zpg address
 
 		//99 STA abs,y
 		private void STA_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
@@ -1519,7 +1553,6 @@ namespace K6502Emu
 			Memory[Address.Lower] = Operand;                          //write same value back to zpg address
 			Operand = DoASL(Operand);                                 //perform ASL operation
 		}
-
 		private void ASL_z_4() => Memory[Address.Lower] = Operand;    //write new value back to zpg address
 
 		//0A ASL
@@ -1568,10 +1601,7 @@ namespace K6502Emu
 			if (X > Address.Lower)                                     //if page crossed
 				Address.Upper++;                                       //fix upper byte of address
 		}
-		private void ASL_ax_4()
-		{
-			Operand = Memory[Address.Whole];                           //re-read from effective address
-		}
+		private void ASL_ax_4() => Operand = Memory[Address.Whole];    //re-read from effective address
 		private void ASL_ax_5()
 		{
 			Memory[Address.Whole] = Operand;                           //write some value back to effective address
@@ -1588,7 +1618,6 @@ namespace K6502Emu
 			Memory[Address.Lower] = Operand;                          //write same value back to zpg address
 			Operand = DoROL(Operand);                                 //perform ROL operation
 		}
-
 		private void ROL_z_4() => Memory[Address.Lower] = Operand;    //write new value back to zpg address
 
 		//2A ROL
@@ -1633,10 +1662,7 @@ namespace K6502Emu
 			if (X > Address.Lower)                                     //if page crossed
 				Address.Upper++;                                       //fix upper byte of address
 		}
-		private void ROL_ax_4()
-		{
-			Operand = Memory[Address.Whole];                           //re-read from effective address
-		}
+		private void ROL_ax_4() => Operand = Memory[Address.Whole];    //re-read from effective address
 		private void ROL_ax_5()
 		{
 			Memory[Address.Whole] = Operand;                           //write some value back to effective address
@@ -1653,7 +1679,6 @@ namespace K6502Emu
 			Memory[Address.Lower] = Operand;                          //write same value back to zpg address
 			Operand = DoLSR(Operand);                                 //perform LSR operation
 		}
-
 		private void LSR_z_4() => Memory[Address.Lower] = Operand;    //write new value back to zpg address
 
 		//4A LSR
@@ -1698,17 +1723,13 @@ namespace K6502Emu
 			if (X > Address.Lower)                                     //if page crossed
 				Address.Upper++;                                       //fix upper byte of address
 		}
-		private void LSR_ax_4()
-		{
-			Operand = Memory[Address.Whole];                           //re-read from effective address
-		}
+		private void LSR_ax_4() => Operand = Memory[Address.Whole];    //re-read from effective address
 		private void LSR_ax_5()
 		{
 			Memory[Address.Whole] = Operand;                           //write some value back to effective address
 			Operand = DoLSR(Operand);                                  //perform LSR operation
 		}
 		private void LSR_ax_6() => Memory[Address.Lower] = Operand;    //write new value back to effective address
-
 
 
 		//66 ROR zpg
@@ -1719,7 +1740,6 @@ namespace K6502Emu
 			Memory[Address.Lower] = Operand;                          //write same value back to zpg address
 			Operand = DoROR(Operand);                                 //perform ROR operation
 		}
-
 		private void ROR_z_4() => Memory[Address.Lower] = Operand;    //write new value back to zpg address
 
 		//6A ROR
@@ -1764,10 +1784,7 @@ namespace K6502Emu
 			if (X > Address.Lower)                                     //if page crossed
 				Address.Upper++;                                       //fix upper byte of address
 		}
-		private void ROR_ax_4()
-		{
-			Operand = Memory[Address.Whole];                           //re-read from effective address
-		}
+		private void ROR_ax_4() => Operand = Memory[Address.Whole];    //re-read from effective address
 		private void ROR_ax_5()
 		{
 			Memory[Address.Whole] = Operand;                           //write some value back to effective address
@@ -1776,41 +1793,194 @@ namespace K6502Emu
 		private void ROR_ax_6() => Memory[Address.Lower] = Operand;    //write new value back to effective address
 
 
-		//82
-		//86
-		//8A
-		//8E
-		//92
-		//96
-		//9A
-		//9E
+		//86 STX zpg
+		private void STX_z_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void STX_z_2() => Memory[Address.Lower] = A;          //store X at zpg address
 
-		//A2
-		//A6
-		//AA
-		//AE
-		//B2
-		//B6
-		//BA
-		//BE
+		//8A TXA
+		private void TXA() => A = X; //transfer X to A
 
-		//C2
-		//C6
-		//CA
-		//CE
-		//D2
-		//D6
-		//DA
-		//DE
+		//8E STX abs
+		private void STX_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch low address byte, inc. PC
+		private void STX_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch high address byte, inc. PC
+		private void STX_a_3() => Memory[Address.Whole] = X;          //store X at address
 
-		//E2
-		//E6
-		//EA
-		//EE
-		//F2
-		//F6
-		//FA
-		//FE
+		//96 STX zpg,Y
+		private void STX_zy_1() => Address.Lower = Memory[PC.Whole++];                //fetch address for operand, inc. PC
+		private void STX_zy_2() => Address.Lower = (byte)(Memory[Address.Lower] + Y); //read operand from address and add Y to it
+		private void STX_zy_3() => Memory[Address.Lower] = X;                         //store X at zpg address
+
+
+		//9A TXS
+		private void TXS() => S = X; //transfer X to S (this does not affect any flags)
+
+		//9E *SHX abs,Y
+		private void SHX_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void SHX_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void SHX_ax_3()
+		{
+			_ = Memory[Address.Whole];                                 //read from effective address (throw away)
+			if (Y > Address.Lower)                                     //page crossed, must inc. high byte of address and repeat read
+				Address.Upper++;
+		}
+		private void SHX_ax_4() =>
+			Memory[Address.Whole] = (byte)(X & (Address.Upper + 1));   //write to effective address
+
+
+		//A2 LDX #
+		private void LDX_im() => X = Memory[PC.Whole++]; //load X from immediate, inc. PC
+
+		//A6 LDX zpg
+		private void LDX_z_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address
+		private void LDX_z_2() => X = Memory[Address.Lower];          //load X from zpg address
+
+		//AA TAX
+		private void TAX() => X = A; //transfer A to X
+
+		//AE LDX abs
+		private void LDX_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower
+		private void LDX_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper
+		private void LDX_a_3() => X = Memory[Address.Whole];          //load X from effective address
+
+		//B6 LDX zpg,Y
+		private void LDX_zy_1() => Operand = Memory[PC.Whole++];                //fetch address, inc. PC
+		private void LDX_zy_2() => Address.Lower = (byte)(Memory[Operand] + Y); //read from address and add Y to it
+		private void LDX_zy_3() => Memory[Address.Lower] = X;                   //load X from effective address
+
+		//BA TSX
+		private void TSX() => X = S; //transfer S to X
+
+		//BE LDX abs,Y
+		private void LDX_ay_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void LDX_ay_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address
+			Address.Lower += Y;                                        //add Y to low address byte
+		}
+		private void LDX_ay_3()
+		{
+			X = Memory[Address.Whole];                                 //load X from effective address
+			if (Y > Address.Lower)                                     //page crossed, must inc. high byte of address and repeat read
+				Address.Upper++;
+		}
+		private void LDX_ay_4() => X = Memory[Address.Whole];          //re-load X from effective address
+
+
+		//C6 DEC zpg
+		private void DEC_z_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address, inc. PC
+		private void DEC_z_2() => Operand = Memory[Address.Lower];    //read from zpg address
+		private void DEC_z_3()
+		{
+			Memory[Address.Lower] = Operand;                          //write same value back to zpg address
+			SetFlagsZN(--Operand);                                //decrement
+		}
+		private void DEC_z_4() => Memory[Address.Lower] = Operand;    //write new value back to zpg address
+
+		//CA DEX
+		private void DEX() => X--; //decrement X
+
+		//CE DEC abs
+		private void DEC_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower, inc. PC
+		private void DEC_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper, inc. PC
+		private void DEC_a_3() => Operand = Memory[Address.Whole];    //read from effective address
+		private void DEC_a_4()
+		{
+			Memory[Address.Whole] = Operand;                          //write same value back to effective address
+			SetFlagsZN(--Operand);                                //decrement
+		}
+		private void DEC_a_5() => Memory[Address.Whole] = Operand;    //write new value back to effective address
+
+		//D6 DEC zpg,X
+		private void DEC_zx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address, inc. PC
+		private void DEC_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read from addres, add X to it
+		private void DEC_zx_3() => Operand = Memory[Address.Lower];                   //read from effective address
+		private void DEC_zx_4()
+		{
+			Memory[Address.Whole] = Operand;                                          //write same value back to effective address
+			SetFlagsZN(--Operand);                                                 //decrement
+		}
+		private void DEC_zx_5() => Memory[Address.Lower] = Operand;                   //write new value back to effective address
+
+		//DE DEC abs,X
+		private void DEC_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void DEC_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address, inc. PC
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void DEC_ax_3()
+		{
+			Operand = Memory[Address.Whole];                           //read from effective address (invalid)
+			if (X > Address.Lower)                                     //if page crossed
+				Address.Upper++;                                       //fix upper byte of address
+		}
+		private void DEC_ax_4() => Operand = Memory[Address.Whole];    //re-read from effective address
+		private void DEC_ax_5()
+		{
+			Memory[Address.Whole] = Operand;                           //write some value back to effective address
+			SetFlagsZN(--Operand);                                     //perform ROR operation
+		}
+		private void DEC_ax_6() => Memory[Address.Lower] = Operand;    //write new value back to effective address
+
+
+		//C6 INC zpg
+		private void INC_z_1() => Address.Lower = Memory[PC.Whole++]; //fetch zpg address, inc. PC
+		private void INC_z_2() => Operand = Memory[Address.Lower];    //read from zpg address
+		private void INC_z_3()
+		{
+			Memory[Address.Lower] = Operand;                          //write same value back to zpg address
+			SetFlagsZN(++Operand);                                //INCrement
+		}
+		private void INC_z_4() => Memory[Address.Lower] = Operand;    //write new value back to zpg address
+
+		//CE INC abs
+		private void INC_a_1() => Address.Lower = Memory[PC.Whole++]; //fetch address lower, inc. PC
+		private void INC_a_2() => Address.Upper = Memory[PC.Whole++]; //fetch address upper, inc. PC
+		private void INC_a_3() => Operand = Memory[Address.Whole];    //read from effective address
+		private void INC_a_4()
+		{
+			Memory[Address.Whole] = Operand;                          //write same value back to effective address
+			SetFlagsZN(++Operand);                                //INCrement
+		}
+		private void INC_a_5() => Memory[Address.Whole] = Operand;    //write new value back to effective address
+
+		//D6 INC zpg,X
+		private void INC_zx_1() => Address.Lower = Memory[PC.Whole++];                //fetch address, inc. PC
+		private void INC_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); //read from addres, add X to it
+		private void INC_zx_3() => Operand = Memory[Address.Lower];                   //read from effective address
+		private void INC_zx_4()
+		{
+			Memory[Address.Whole] = Operand;                                          //write same value back to effective address
+			SetFlagsZN(++Operand);                                                 //INCrement
+		}
+		private void INC_zx_5() => Memory[Address.Lower] = Operand;                   //write new value back to effective address
+
+		//DE INC abs,X
+		private void INC_ax_1() => Address.Lower = Memory[PC.Whole++]; //fetch low byte of address, inc. PC
+		private void INC_ax_2()
+		{
+			Address.Upper = Memory[PC.Whole++];                        //fetch high byte of address, inc. PC
+			Address.Lower += X;                                        //add X to low address byte
+		}
+		private void INC_ax_3()
+		{
+			Operand = Memory[Address.Whole];                           //read from effective address (invalid)
+			if (X > Address.Lower)                                     //if page crossed
+				Address.Upper++;                                       //fix upper byte of address
+		}
+		private void INC_ax_4() => Operand = Memory[Address.Whole];    //re-read from effective address
+		private void INC_ax_5()
+		{
+			Memory[Address.Whole] = Operand;                           //write some value back to effective address
+			SetFlagsZN(++Operand);                                     //perform ROR operation
+		}
+		private void INC_ax_6() => Memory[Address.Lower] = Operand;    //write new value back to effective address
+
+
 
 		/* rest */
 

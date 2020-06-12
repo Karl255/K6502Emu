@@ -5,9 +5,9 @@ namespace K6502Emu
 	public partial class K6502
 	{
 		//the flags zero and negative are set/cleared when A/X/Y get loaded in any way
-		protected byte A { get => _a; set => _a = SetFlagsOnLoad(value); }
-		protected byte X { get => _x; set => _x = SetFlagsOnLoad(value); }
-		protected byte Y { get => _y; set => _y = SetFlagsOnLoad(value); }
+		protected byte A { get => _a; set => _a = SetFlagsZN(value); }
+		protected byte X { get => _x; set => _x = SetFlagsZN(value); }
+		protected byte Y { get => _y; set => _y = SetFlagsZN(value); }
 		private byte _a = 0;
 		private byte _x = 0;
 		private byte _y = 0;
@@ -44,7 +44,7 @@ namespace K6502Emu
 		}
 
 		//helper methods for instructions
-		private byte SetFlagsOnLoad(byte val)
+		private byte SetFlagsZN(byte val)
 		{
 			P.Zero = val == 0;
 			//bit 7 can be seen as sign in 2's complement numbers
@@ -92,7 +92,7 @@ namespace K6502Emu
 			int t = val << 1;
 			P.Carry = (t & 0x100) > 0;
 			val = (byte)(t & 0xff); //trimming with & just to be sure
-			return SetFlagsOnLoad(val);
+			return SetFlagsZN(val);
 		}
 
 		private byte DoROL(byte val)
@@ -101,7 +101,7 @@ namespace K6502Emu
 			int t = (val << 1) | (P.Carry ? 1 : 0);
 			P.Carry = (t & 0x100) > 0;
 			val = (byte)(t & 0xff); //trimming with & just to be sure
-			return SetFlagsOnLoad(val);
+			return SetFlagsZN(val);
 		}
 
 		private byte DoLSR(byte val)
@@ -110,7 +110,7 @@ namespace K6502Emu
 			int t = val >> 1;
 			P.Carry = (val & 1) > 0;
 			val = (byte)t;
-			return SetFlagsOnLoad(val);
+			return SetFlagsZN(val);
 		}
 
 		private byte DoROR(byte val)
@@ -119,7 +119,7 @@ namespace K6502Emu
 			int t = (val >> 1) | (P.Carry ? 0x80 : 0x00);
 			P.Carry = (val & 1) > 0;
 			val = (byte)t;
-			return SetFlagsOnLoad(val);
+			return SetFlagsZN(val);
 		}
 	}
 }
