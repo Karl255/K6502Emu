@@ -12,6 +12,14 @@ namespace K6502Emu
 		private byte _x = 0;
 		private byte _y = 0;
 
+		public byte GetA => A;
+		public byte GetX => X;
+		public byte GetY => Y;
+		public byte GetP => P.Byte;
+		public byte GetS => S;
+		public ushort GetPC => PC.Whole;
+		public int GetCycle => OpCodeCycle;
+
 		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
 		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; //program counter
 		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
