@@ -1,5 +1,6 @@
 ﻿namespace K6502Emu
 {
+	//TODO: turn into struct and make sure everything works
 	public class StatusRegister
 	{
 		private byte _byte = 0b0011_0100; //power up value is supposedly 0x34

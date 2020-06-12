@@ -85,5 +85,41 @@ namespace K6502Emu
 			P.Overflow = t > 127 || t < -128; //then see if the result is outside the sbyte range
 			//Zero and Negative are automatically set in SetFlagsOnLoad()
 		}
+
+		private byte DoASL(byte val)
+		{
+			//shift left: C <- val <- 0
+			int t = val << 1;
+			P.Carry = (t & 0x100) > 0;
+			val = (byte)(t & 0xff); //trimming with & just to be sure
+			return SetFlagsOnLoad(val);
+		}
+
+		private byte DoROL(byte val)
+		{
+			//rotate left with carry: C <- val <- C
+			int t = (val << 1) | (P.Carry ? 1 : 0);
+			P.Carry = (t & 0x100) > 0;
+			val = (byte)(t & 0xff); //trimming with & just to be sure
+			return SetFlagsOnLoad(val);
+		}
+
+		private byte DoLSR(byte val)
+		{
+			//shift right: 0 -> val -> C
+			int t = val >> 1;
+			P.Carry = (val & 1) > 0;
+			val = (byte)t;
+			return SetFlagsOnLoad(val);
+		}
+
+		private byte DoROR(byte val)
+		{
+			//rotate right with carry: C -> val -> C
+			int t = (val >> 1) | (P.Carry ? 0x80 : 0x00);
+			P.Carry = (val & 1) > 0;
+			val = (byte)t;
+			return SetFlagsOnLoad(val);
+		}
 	}
 }
