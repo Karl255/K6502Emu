@@ -218,23 +218,27 @@ namespace K6502Emu
 			Instructions[0xBE] = new Action[] { CYCLE_0, LDX_ay_1, LDX_ay_2, LDX_ay_3, LDX_ay_4                      };
 
 			Instructions[0xC2] = new Action[] { CYCLE_0, NOP_im                                                      };
-			Instructions[0x66] = new Action[] { CYCLE_0, DEC_z_1 , DEC_z_2 , DEC_z_3 , DEC_z_4                       };
-			Instructions[0x6A] = new Action[] { CYCLE_0, DEX                                                         };
-			Instructions[0x6E] = new Action[] { CYCLE_0, DEC_a_1 , DEC_a_2 , DEC_a_3 , DEC_a_4 , DEC_a_5             };
-			Instructions[0x72] = new Action[] { CYCLE_0, STP                                                         };
-			Instructions[0x76] = new Action[] { CYCLE_0, DEC_zx_1, DEC_zx_2, DEC_zx_3, DEC_zx_4, DEC_zx_5            };
-			Instructions[0x7A] = new Action[] { CYCLE_0, NOP                                                         };
-			Instructions[0x7E] = new Action[] { CYCLE_0, DEC_ax_1, DEC_ax_2, DEC_ax_3, DEC_ax_4, DEC_ax_5, DEC_ax_6  };
+			Instructions[0xC6] = new Action[] { CYCLE_0, DEC_z_1 , DEC_z_2 , DEC_z_3 , DEC_z_4                       };
+			Instructions[0xCA] = new Action[] { CYCLE_0, DEX                                                         };
+			Instructions[0xCE] = new Action[] { CYCLE_0, DEC_a_1 , DEC_a_2 , DEC_a_3 , DEC_a_4 , DEC_a_5             };
+			Instructions[0xD2] = new Action[] { CYCLE_0, STP                                                         };
+			Instructions[0xD6] = new Action[] { CYCLE_0, DEC_zx_1, DEC_zx_2, DEC_zx_3, DEC_zx_4, DEC_zx_5            };
+			Instructions[0xDA] = new Action[] { CYCLE_0, NOP                                                         };
+			Instructions[0xDE] = new Action[] { CYCLE_0, DEC_ax_1, DEC_ax_2, DEC_ax_3, DEC_ax_4, DEC_ax_5, DEC_ax_6  };
 			
-			Instructions[0xC2] = new Action[] { CYCLE_0, NOP_im                                                      };
-			Instructions[0x66] = new Action[] { CYCLE_0, INC_z_1 , INC_z_2 , INC_z_3 , INC_z_4                       };
-			Instructions[0x6A] = new Action[] { CYCLE_0, NOP                                                         };
-			Instructions[0x6E] = new Action[] { CYCLE_0, INC_a_1 , INC_a_2 , INC_a_3 , INC_a_4 , INC_a_5             };
-			Instructions[0x72] = new Action[] { CYCLE_0, STP                                                         };
-			Instructions[0x76] = new Action[] { CYCLE_0, INC_zx_1, INC_zx_2, INC_zx_3, INC_zx_4, INC_zx_5            };
-			Instructions[0x7A] = new Action[] { CYCLE_0, NOP                                                         };
-			Instructions[0x7E] = new Action[] { CYCLE_0, INC_ax_1, INC_ax_2, INC_ax_3, INC_ax_4, INC_ax_5, INC_ax_6  };
+			Instructions[0xE2] = new Action[] { CYCLE_0, NOP_im                                                      };
+			Instructions[0xE6] = new Action[] { CYCLE_0, INC_z_1 , INC_z_2 , INC_z_3 , INC_z_4                       };
+			Instructions[0xEA] = new Action[] { CYCLE_0, NOP                                                         };
+			Instructions[0xEE] = new Action[] { CYCLE_0, INC_a_1 , INC_a_2 , INC_a_3 , INC_a_4 , INC_a_5             };
+			Instructions[0xF2] = new Action[] { CYCLE_0, STP                                                         };
+			Instructions[0xF6] = new Action[] { CYCLE_0, INC_zx_1, INC_zx_2, INC_zx_3, INC_zx_4, INC_zx_5            };
+			Instructions[0xFA] = new Action[] { CYCLE_0, NOP                                                         };
+			Instructions[0xFE] = new Action[] { CYCLE_0, INC_ax_1, INC_ax_2, INC_ax_3, INC_ax_4, INC_ax_5, INC_ax_6  };
 
+			for (int i = 3; i < 0xff; i += 4)
+			{
+				Instructions[i] = new Action[] { CYCLE_0, NOP };
+			}
 		}
 
 		//cycle 0 for all instructions
