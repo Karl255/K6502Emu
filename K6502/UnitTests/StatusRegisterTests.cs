@@ -3,7 +3,7 @@ using Xunit;
 
 namespace UnitTests
 {
-	public class K6502Tests
+	public class StatusRegisterTests
 	{
 		[Theory]
 		[InlineData(0)]

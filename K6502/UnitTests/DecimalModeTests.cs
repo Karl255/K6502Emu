@@ -1,73 +1,24 @@
-﻿using System;
+﻿using K6502Emu;
+using Newtonsoft.Json.Serialization;
+using System;
+using Xunit;
+using Xunit.Sdk;
 
-namespace K6502Emu
+namespace UnitTests
 {
-	public partial class K6502
+	public class DecimalModeTests
 	{
-		//the flags zero and negative are set/cleared when X/Y get loaded in any way
-		//A doesn't have that because of decimal mode
-		protected byte A { get; set; } = 0;
-		protected byte X { get => _x; set => _x = SetFlagsZN(value); }
-		protected byte Y { get => _y; set => _y = SetFlagsZN(value); }
-		private byte _x = 0;
-		private byte _y = 0;
-
-		public byte GetA => A;
-		public byte GetX => X;
-		public byte GetY => Y;
-		public byte GetP => P.Byte;
-		public byte GetS => S;
-		public ushort GetPC => PC.Whole;
-		public int GetCycle => OpCodeCycle;
-
-		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
-		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; //program counter
-		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
-		protected byte S; //stack pointer
-		protected byte Operand = 0; //a register where instructions store internal data
-
-		protected Action[][] Instructions = new Action[256][];
-		protected Bus Memory;
-
-		private int OpCodeCycle = 1;
-		private byte OpCode = 0x4C; //JMP abs at cycle 1
-
-		//configuration fields
-		readonly bool DecimalModeEnabled;
-
-		public K6502(Bus bus, bool enableDecimalMode = true)
+		private const bool DecimalModeEnabled = true;
+		private StatusRegister P = new StatusRegister
 		{
-			DecimalModeEnabled = enableDecimalMode;
-			Memory = bus;
+			Decimal = true
+		};
+		private byte A;
 
-			InitInstructions();
-		}
-
-		public void Tick()
-		{
-			if (OpCodeCycle >= Instructions[OpCode].Length)
-				OpCodeCycle = 0;
-
-			Instructions[OpCode][OpCodeCycle]();
-			OpCodeCycle++;
-		}
-
-		//helper methods for instructions
-		private byte SetFlagsZN(byte val)
-		{
-			P.Zero = val == 0;
-			//bit 7 can be seen as sign in 2's complement numbers
-			//since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
-			P.Negative = val >= 128;
-			return val;
-		}
-
-		private void DoCompare(byte reg, byte val)
-		{
-			P.Carry = reg >= val;
-			P.Zero = reg == val;
-			P.Negative = reg - val < 0;
-		}
+		/*
+		 * yes I am aware that having to copy paste these method is a bad way of doing this,
+		 * I was just too lazy to do it the proper way
+		 */
 
 		private void DoADC(byte val)
 		{
@@ -175,40 +126,59 @@ namespace K6502Emu
 			}
 		}
 
-		private byte DoASL(byte val)
+		private byte SetFlagsZN(byte val)
 		{
-			//shift left: C <- val <- 0
-			int t = val << 1;
-			P.Carry = (t & 0x100) > 0;
-			val = (byte)(t & 0xff); //trimming with & just to be sure
-			return SetFlagsZN(val);
+			P.Zero = val == 0;
+			//bit 7 can be seen as sign in 2's complement numbers
+			//since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
+			P.Negative = val >= 128;
+			return val;
 		}
 
-		private byte DoROL(byte val)
+		[Theory]
+		[InlineData(0x00, 0x00, 0, 0x00, false, false, true , false)]
+		[InlineData(0x79, 0x00, 1, 0x80, true , true , false, false)]
+		[InlineData(0x24, 0x56, 0, 0x80, true , true , false, false)]
+		[InlineData(0x93, 0x82, 0, 0x75, false, true , false, true )]
+		[InlineData(0x89, 0x76, 0, 0x65, false, false, false, true )]
+		[InlineData(0x89, 0x76, 1, 0x66, false, false, true , true )]
+		[InlineData(0x80, 0xf0, 0, 0xd0, false, true , false, true )]
+		[InlineData(0x80, 0xfa, 0, 0xe0, true , false, false, true )]
+		[InlineData(0x2f, 0x4f, 0, 0x74, false, false, false, false)]
+		[InlineData(0x6f, 0x00, 1, 0x76, false, false, false, false)]
+		public void ADCTest(byte A, byte val, byte C, byte sum, bool negative, bool overflow, bool zero, bool carry)
 		{
-			//rotate left with carry: C <- val <- C
-			int t = (val << 1) | (P.Carry ? 1 : 0);
-			P.Carry = (t & 0x100) > 0;
-			val = (byte)(t & 0xff); //trimming with & just to be sure
-			return SetFlagsZN(val);
+			this.A = A;
+			P.Carry = C == 1;
+			DoADC(val);
+
+			Assert.Equal(sum.ToString("X"), this.A.ToString("X")); //convert to hex for easier reading
+			Assert.Equal(negative, P.Negative);
+			Assert.Equal(overflow, P.Overflow);
+			Assert.Equal(zero, P.Zero);
+			Assert.Equal(carry, P.Carry);
 		}
 
-		private byte DoLSR(byte val)
-		{
-			//shift right: 0 -> val -> C
-			int t = val >> 1;
-			P.Carry = (val & 1) > 0;
-			val = (byte)t;
-			return SetFlagsZN(val);
-		}
 
-		private byte DoROR(byte val)
+		[Theory]
+		[InlineData(0x00, 0x00, 0, 0x99, true , false, false, false)]
+		[InlineData(0x00, 0x00, 1, 0x00, false, false, true , true )]
+		[InlineData(0x00, 0x01, 1, 0x99, true , false, false, false)]
+		[InlineData(0x0a, 0x00, 1, 0x0a, false, false, false, true )]
+		[InlineData(0x0b, 0x00, 0, 0x0a, false, false, false, true )]
+		[InlineData(0x9a, 0x00, 1, 0x9a, true , false, false, true )]
+		[InlineData(0x9b, 0x00, 0, 0x9a, true , false, false, true )]
+		public void SBCTest(byte A, byte val, byte C, byte diff, bool negative, bool overflow, bool zero, bool carry)
 		{
-			//rotate right with carry: C -> val -> C
-			int t = (val >> 1) | (P.Carry ? 0x80 : 0x00);
-			P.Carry = (val & 1) > 0;
-			val = (byte)t;
-			return SetFlagsZN(val);
+			this.A = A;
+			P.Carry = C == 1;
+			DoSBC(val);
+
+			Assert.Equal(diff.ToString("X"), this.A.ToString("X")); //convert to hex for easier reading
+			Assert.Equal(negative, P.Negative);
+			Assert.Equal(overflow, P.Overflow);
+			Assert.Equal(zero, P.Zero);
+			Assert.Equal(carry, P.Carry);
 		}
 	}
 }
