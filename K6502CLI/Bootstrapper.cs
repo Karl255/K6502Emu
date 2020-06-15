@@ -9,9 +9,9 @@ namespace K6502CLI
 		static void Main(string[] args)
 		{
 			var data = File.ReadAllBytes("input.rom");
-			var mem = new MemoryComponent(0x0000..0xffff, data);
+			var mem = new Memory(0x0000..0xffff, data);
 
-			var bus = new ComponentBus
+			var bus = new Bus
 			{
 				mem
 			};

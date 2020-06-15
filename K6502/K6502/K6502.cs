@@ -27,12 +27,12 @@ namespace K6502Emu
 		protected byte Operand = 0; //a register where instructions store internal data
 
 		protected Action[][] Instructions = new Action[256][];
-		protected ComponentBus Memory;
+		protected Bus Memory;
 
 		private int OpCodeCycle = 1;
 		private byte OpCode = 0x4C; //JMP abs at cycle 1
 
-		public K6502(ComponentBus bus)
+		public K6502(Bus bus)
 		{
 			InitInstructions();
 

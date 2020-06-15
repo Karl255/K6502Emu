@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 namespace K6502Emu
 {
-	public class ComponentBus : IEnumerable<BusComponent>
+	public class Bus : IEnumerable<Component>
 	{
-		private List<BusComponent> Components;
+		private List<Component> Components;
 
-		public ComponentBus() => Components = new List<BusComponent>();
-		public ComponentBus(IEnumerable<BusComponent> components) => Components = new List<BusComponent>(components);
+		public Bus() => Components = new List<Component>();
+		public Bus(IEnumerable<Component> components) => Components = new List<Component>(components);
 
-		public void Add(BusComponent component) => Components.Add(component);
+		public void Add(Component component) => Components.Add(component);
 
 		//implementing IEnumerable
-		public IEnumerator<BusComponent> GetEnumerator() => ((IEnumerable<BusComponent>)Components).GetEnumerator();
-		IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<BusComponent>)Components).GetEnumerator();
+		public IEnumerator<Component> GetEnumerator() => Components.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => Components.GetEnumerator();
 
 		//indexers for accessing components on the bus
 		public byte this[ushort address]

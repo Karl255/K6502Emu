@@ -2,7 +2,7 @@
 
 namespace K6502Emu
 {
-	public abstract class BusComponent
+	public abstract class Component
 	{
 		public virtual Range AddressRange { get => _addressRange; set => _addressRange = value; }
 		protected Range _addressRange;

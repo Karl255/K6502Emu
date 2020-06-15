@@ -2,18 +2,18 @@
 
 namespace K6502Emu
 {
-	public class MemoryComponent : BusComponent
+	public class Memory : Component
 	{
 		//public override Range AddressRange { get; set; }
 		private byte[] memory;
 
-		public MemoryComponent(Range addressRange)
+		public Memory(Range addressRange)
 		{
 			AddressRange = addressRange;
 			memory = new byte[addressRange.End.Value - addressRange.Start.Value + 1];
 		}
 
-		public MemoryComponent(Range addressRange, byte[] data) : this(addressRange)
+		public Memory(Range addressRange, byte[] data) : this(addressRange)
 		{
 			for (int i = 0; i < data.Length; i++)
 			{
