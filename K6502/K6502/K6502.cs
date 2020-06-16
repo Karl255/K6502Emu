@@ -12,25 +12,27 @@ namespace K6502Emu
 		private byte _x = 0;
 		private byte _y = 0;
 
+		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
+		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; //program counter
+		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
+		protected byte S = 0xFD; //stack pointer
+
+		//properties for getting the internal state from outside
 		public byte GetA => A;
 		public byte GetX => X;
 		public byte GetY => Y;
 		public byte GetP => P.Byte;
 		public byte GetS => S;
 		public ushort GetPC => PC.Whole;
-		public int GetCycle => OpCodeCycle;
-
-		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
-		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; //program counter
-		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
-		protected byte S; //stack pointer
-		protected byte Operand = 0; //a register where instructions store internal data
+		public int GetCycle => OpCodeCycle + 0; //+ 0 so VS shuts up about using an auto property
 
 		protected Action[][] Instructions = new Action[256][];
 		protected Bus Memory;
 
+		protected byte Operand = 0; //a register where instructions store internal data
 		private int OpCodeCycle = 1;
 		private byte OpCode = 0x4C; //JMP abs at cycle 1
+		protected bool instructionEnded = false;
 
 		//configuration fields
 		readonly bool DecimalModeEnabled;
@@ -45,12 +47,16 @@ namespace K6502Emu
 
 		public void Tick()
 		{
-			if (OpCodeCycle >= Instructions[OpCode].Length)
-				OpCodeCycle = 0;
-
 			Instructions[OpCode][OpCodeCycle]();
-			OpCodeCycle++;
+
+			if (OpCodeCycle == Instructions[OpCode].Length - 1 || instructionEnded)
+				OpCodeCycle = 0;
+			else
+				OpCodeCycle++;
 		}
+
+		protected void EndInstruction() => instructionEnded = true;
+
 
 		//helper methods for instructions
 		private byte SetFlagsZN(byte val)
