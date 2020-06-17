@@ -26,13 +26,17 @@ namespace K6502Emu
 		public ushort GetPC => PC.Whole;
 		public int GetCycle => OpCodeCycle + 0; //+ 0 so VS shuts up about using an auto property
 
-		protected Action[][] Instructions = new Action[256][];
+		protected Action[][] Instructions = new Action[258][];
 		protected Bus Memory;
 
 		protected byte Operand = 0; //a register where instructions store internal data
 		private int OpCodeCycle = 1;
-		private byte OpCode = 0x4C; //JMP abs at cycle 1
+		private ushort OpCode = 0x4C; //JMP abs at cycle 1
 		protected bool instructionEnded = false;
+		private bool IRQLevelDetector = false;
+		private bool IRQSignal = false;
+		private bool NMIEdgeDetector = false;
+		private bool NMISignal = false;
 
 		//configuration fields
 		readonly bool DecimalModeEnabled;
@@ -49,11 +53,34 @@ namespace K6502Emu
 		{
 			Instructions[OpCode][OpCodeCycle]();
 
+			int t = Instructions[OpCode].Length;
+
+			//poll for interrupts
+			if (OpCode <= 255 && (                   //don't poll if interrupt sequence
+				(t == 2 && OpCodeCycle == 1)         //for 2 cycle instructions, poll after 1st cycle
+				|| (t > 2 && OpCodeCycle == t - 1))) //for >2 cycle instructions, poll on last cycle
+			{
+				IRQSignal = IRQLevelDetector;
+				if (NMIEdgeDetector)
+					NMISignal = true;
+			}
+
+			/*
+			 * TODO: Implement "interrupt hijacknig" (NMI hijacking IRQ or BRK, IRQ hijacking BRK):
+			 * http://wiki.nesdev.com/w/index.php/CPU_interrupts#Interrupt_hijacking
+			 * Also make it configurable (enable/disable, similarly to decimal mode)
+			 */
+
 			if (OpCodeCycle == Instructions[OpCode].Length - 1 || instructionEnded)
 				OpCodeCycle = 0;
 			else
 				OpCodeCycle++;
 		}
+
+		public void SetIRQ() => IRQLevelDetector = true;
+		public void ClearIRQ() => IRQLevelDetector = false;
+
+		public void SetNMI() => NMIEdgeDetector = true;
 
 		protected void EndInstruction() => instructionEnded = true;
 

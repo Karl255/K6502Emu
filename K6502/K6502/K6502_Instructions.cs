@@ -5,7 +5,7 @@
  * - https://www.masswerk.at/6502/6502_instruction_set.html (for comments and deatils about each instruction)
  * - http://6502.org/tutorials/6502opcodes.html
  * 
- * instructions prefixed with * are unofficial/undocumented
+ * instructions prefixed with * are unofficial/undocumented and are low priorits for implementing
  */
 
 using System;
@@ -236,29 +236,49 @@ namespace K6502Emu
 			Instructions[0xFA] = new Action[] { CYCLE_0, NOP                                                         };
 			Instructions[0xFE] = new Action[] { CYCLE_0, INC_ax_1, INC_ax_2, INC_ax_3, INC_ax_4, INC_ax_5, INC_ax_6  };
 
+			//fill the remaining opcodes with NOPs
 			for (int i = 3; i <= 0xff; i += 4)
 			{
 				Instructions[i] = new Action[] { CYCLE_0, NOP };
 			}
+
+			//interrupt routines
+			Instructions[0x100] = new Action[] {CYCLE_0, IRQ_1   , IRQ_2   , IRQ_3   , IRQ_4   , IRQ_5   , IRQ_6     };
+			Instructions[0x101] = new Action[] {CYCLE_0, NMI_1   , NMI_2   , NMI_3   , NMI_4   , NMI_5   , NMI_6     };
 		}
 
 		//cycle 0 for all instructions
 		private void CYCLE_0()
 		{
-			//TODO: check for and handle IRQ/NMI
-			OpCodeCycle = 0; //this may be called from non-0 cycles, so make sure it is the 0th cycle
-			OpCode = Memory[PC.Whole++]; //fetch opcode, inc. PC
+			/*
+			 * TODO: BRK, IRQ and NMI should use the same opcode and therefore interrupt sequence,
+			 *       the interrupt vector and what flags are affected is then determined between cycles 4 and 5:
+			 *       http://wiki.nesdev.com/w/index.php/CPU_interrupts#IRQ_and_NMI_tick-by-tick_execution
+			 *       Also, interrupts would suppress PC increments in the BRK instruction
+			 */
+			if (NMISignal)
+			{
+				_ = Memory[PC.Whole]; //fetch opcode and discard
+				OpCode = 257;
+			}
+			else if (IRQSignal && !P.Interrupt)
+			{
+				_ = Memory[PC.Whole]; //fetch opcode and discord
+				OpCode = 256;
+			}
+			else
+				OpCode = Memory[PC.Whole++]; //fetch opcode, inc. PC
 		}
 
 		//control instructions
 
 		//00 BRK
-		private void BRK_1() => _ = Memory[PC.Whole++];                           //read next instruction byte (throw away), inc. PC
-		private void BRK_2() { Memory[0x0100 + S--] = PC.Upper; P.Break = true; } //push PCH on stack, with B set
-		private void BRK_3() => Memory[0x0100 + S--] = PC.Lower;                  //push PCL on stack
-		private void BRK_4() => Memory[0x0100 + S--] = P.Byte;                    //push P on stack
-		private void BRK_5() => PC.Lower = Memory[0xFFFE];                        //fetch PCL
-		private void BRK_6() => PC.Upper = Memory[0xFFFF];                        //fetch PCH
+		private void BRK_1() => _ = Memory[PC.Whole++];                              //read next instruction byte (throw away), inc. PC
+		private void BRK_2() { Memory[0x0100 + S--] = PC.Upper; P.Break = true; }    //push PCH on stack, with B set
+		private void BRK_3() => Memory[0x0100 + S--] = PC.Lower;                     //push PCL on stack
+		private void BRK_4() => Memory[0x0100 + S--] = (byte)(P.Byte | 0b0001_0000); //push P on stack with B flag set
+		private void BRK_5() {  PC.Lower = Memory[0xFFFE]; P.Interrupt = true; }     //fetch IRQ interrupt vector lower
+		private void BRK_6() => PC.Upper = Memory[0xFFFF];                           //fetch IRQ interrupt vector upper
 
 		//04, 44, 64
 		//*NOP zpg
@@ -1397,7 +1417,6 @@ namespace K6502Emu
 
 
 
-
 		/* RMW operations */
 
 		//02, 12, 22, 32, 42, 52, 62, 72, 92, B2, D2, F2
@@ -1914,5 +1933,24 @@ namespace K6502Emu
 		//FB
 		//FF
 
+
+
+		/* interrrupt routines */
+
+		//IRQ
+		private void IRQ_1() => _ = Memory[PC.Whole];                                //read next instruction byte and discard it
+		private void IRQ_2() => Memory[0x0100 + S--] = PC.Upper;                     //push PC upper on stack
+		private void IRQ_3() => Memory[0x0100 + S--] = PC.Lower;                     //push PC lower on stack
+		private void IRQ_4() => Memory[0x0100 + S--] = (byte)(P.Byte & 0b1110_1111); //push P on stack with B clear
+		private void IRQ_5() {  PC.Lower = Memory[0xfe]; P.Interrupt = true; }       //fetch IRQ interrupt vector lower
+		private void IRQ_6() => PC.Upper = Memory[0xff];                             //fetch IRQ interrupt vector upper
+
+		//NMI
+		private void NMI_1() => _ = Memory[PC.Whole];                                //read next instruction byte and discard it
+		private void NMI_2() => Memory[0x0100 + S--] = PC.Upper;                     //push PC upper on stack
+		private void NMI_3() => Memory[0x0100 + S--] = PC.Lower;                     //push PC lower on stack
+		private void NMI_4() => Memory[0x0100 + S--] = (byte)(P.Byte & 0b1110_1111); //push P on stack with B clear
+		private void NMI_5() => PC.Lower = Memory[0xfa];                             //fetch NMI interrupt vector lower
+		private void NMI_6() => PC.Upper = Memory[0xfb];                             //fetch NMI interrupt vector upper
 	}
 }
