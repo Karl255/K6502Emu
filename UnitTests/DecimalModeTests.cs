@@ -1,10 +1,6 @@
-﻿using K6502Emu;
-using Newtonsoft.Json.Serialization;
-using System;
-using Xunit;
-using Xunit.Sdk;
+﻿using Xunit;
 
-namespace UnitTests
+namespace K6502Emu.UnitTests
 {
 	public class DecimalModeTests
 	{

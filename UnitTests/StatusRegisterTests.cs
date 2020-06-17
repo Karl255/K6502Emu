@@ -1,7 +1,6 @@
-using K6502Emu;
 using Xunit;
 
-namespace UnitTests
+namespace K6502Emu.UnitTests
 {
 	public class StatusRegisterTests
 	{
