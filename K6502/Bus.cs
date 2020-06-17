@@ -35,7 +35,7 @@ namespace K6502Emu
 			set
 			{
 				foreach (var component in Components)
-					if (address.InRange(component.AddressRange))
+					if ((!component.IsReadOnly) && address.InRange(component.AddressRange))
 						component[address] = value;
 			}
 		}

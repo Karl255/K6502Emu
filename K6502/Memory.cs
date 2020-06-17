@@ -4,8 +4,7 @@ namespace K6502Emu
 {
 	public class Memory : Component
 	{
-		//public override Range AddressRange { get; set; }
-		private byte[] memory;
+		protected byte[] memory;
 
 		public Memory(Range addressRange)
 		{
@@ -27,7 +26,7 @@ namespace K6502Emu
 		public override byte this[ushort address]
 		{
 			get => memory[address - AddressRange.Start.Value];
-			set => memory[address - AddressRange.Start.Value] = value;
+			set { if (!IsReadOnly) memory[address - AddressRange.Start.Value] = value; }
 		}
 	}
 }
