@@ -67,8 +67,8 @@ namespace K6502Emu
 
 			/*
 			 * TODO: Implement "interrupt hijacknig" (NMI hijacking IRQ or BRK, IRQ hijacking BRK):
-			 * http://wiki.nesdev.com/w/index.php/CPU_interrupts#Interrupt_hijacking
-			 * Also make it configurable (enable/disable, similarly to decimal mode)
+			 *       http://wiki.nesdev.com/w/index.php/CPU_interrupts#Interrupt_hijacking
+			 *       Also make it configurable (enable/disable, similarly to decimal mode)
 			 */
 
 			if (OpCodeCycle == Instructions[OpCode].Length - 1 || instructionEnded)

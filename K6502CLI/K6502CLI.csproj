@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\K6502\K6502\K6502Emu.csproj" />
+    <ProjectReference Include="..\K6502\K6502Emu.csproj" />
   </ItemGroup>
 
 </Project>

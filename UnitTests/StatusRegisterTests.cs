@@ -105,8 +105,10 @@ namespace UnitTests
 		[InlineData(7)]
 		public void StatusRegisterBitGetTest(byte pos)
 		{
-			var sr = new StatusRegister();
-			sr.Byte = (byte)(1 << pos);
+			var sr = new StatusRegister
+			{
+				Byte = (byte)(1 << pos)
+			};
 
 			Assert.True(pos switch
 			{
