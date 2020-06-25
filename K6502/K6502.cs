@@ -27,7 +27,7 @@ namespace K6502Emu
 		public int GetCycle => OpCodeCycle + 0; //+ 0 so VS shuts up about using an auto property
 
 		protected Action[][] Instructions = new Action[258][];
-		protected Bus Memory;
+		protected IBus Memory;
 
 		protected byte Operand = 0; //a register where instructions store internal data
 		private int OpCodeCycle = 1;
@@ -41,7 +41,7 @@ namespace K6502Emu
 		//configuration fields
 		readonly bool DecimalModeEnabled;
 
-		public K6502(Bus bus, bool enableDecimalMode = true)
+		public K6502(IBus bus, bool enableDecimalMode = true)
 		{
 			DecimalModeEnabled = enableDecimalMode;
 			Memory = bus;

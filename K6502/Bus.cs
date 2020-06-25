@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace K6502Emu
 {
-	public class Bus : IEnumerable<Component>
+	public class Bus : IBus, IEnumerable<Component>
 	{
 		private List<Component> Components;
 
