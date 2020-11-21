@@ -2,6 +2,7 @@
 
 namespace K6502Emu
 {
+	// TODO: write unit tests for this
 	[StructLayout(LayoutKind.Explicit)]
 	public struct DoubleRegister
 	{

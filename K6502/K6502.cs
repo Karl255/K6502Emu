@@ -4,47 +4,53 @@ namespace K6502Emu
 {
 	public partial class K6502
 	{
-		//the flags zero and negative are set/cleared when X/Y get loaded in any way
-		//A doesn't have that because of decimal mode
+		// the flags zero and negative are set/cleared when X/Y get loaded in any way
+		// A doesn't have that because of decimal mode
 		protected byte A { get; set; } = 0;
 		protected byte X { get => _x; set => _x = SetFlagsZN(value); }
 		protected byte Y { get => _y; set => _y = SetFlagsZN(value); }
 		private byte _x = 0;
 		private byte _y = 0;
 
-		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; //memory address register
-		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; //program counter
-		protected StatusRegister P = new StatusRegister(); //status register: N V - B D I Z C
-		protected byte S = 0xFD; //stack pointer
+		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; // memory address register
+		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; // program counter
+		protected StatusRegister P = new StatusRegister(); // status register: N V - B D I Z C
+		protected byte S = 0xFD; // stack pointer
 
-		//properties for getting the internal state from outside
+		// properties for getting the internal state from outside
 		public byte GetA => A;
 		public byte GetX => X;
 		public byte GetY => Y;
 		public byte GetP => P.Byte;
 		public byte GetS => S;
 		public ushort GetPC => PC.Whole;
-		public int GetCycle => OpCodeCycle + 0; //+ 0 so VS shuts up about using an auto property
+		public int GetCycle => OpCodeCycle;
+		public ushort GetOpCode => OpCode;
 
 		protected Action[][] Instructions = new Action[258][];
-		protected IBus Memory;
+		protected IAddressable<byte> Memory;
 
-		protected byte Operand = 0; //a register where instructions store internal data
+		protected byte Operand = 0; // a register where instructions store internal data
 		private int OpCodeCycle = 1;
-		private ushort OpCode = 0x4C; //JMP abs at cycle 1
+		private ushort OpCode = 0x4C; // JMP abs at cycle 1
 		protected bool instructionEnded = false;
 		private bool IRQLevelDetector = false;
 		private bool IRQSignal = false;
 		private bool NMIEdgeDetector = false;
 		private bool NMISignal = false;
 
-		//configuration fields
-		readonly bool DecimalModeEnabled;
+		// configuration fields
+		private readonly bool DecimalModeEnabled;
 
-		public K6502(IBus bus, bool enableDecimalMode = true)
+		/// <summary>
+		/// Initializes the 6502 emulator class.
+		/// </summary>
+		/// <param name="addressableComponent">The <see cref="IAddressable{TDataSize}"/> connected to the data and address bus of the 6502.</param>
+		/// <param name="enableDecimalMode">If decimal mode should be enabled.</param>
+		public K6502(IAddressable<byte> addressableComponent, bool enableDecimalMode = true)
 		{
 			DecimalModeEnabled = enableDecimalMode;
-			Memory = bus;
+			Memory = addressableComponent;
 
 			InitInstructions();
 		}
@@ -55,10 +61,10 @@ namespace K6502Emu
 
 			int t = Instructions[OpCode].Length;
 
-			//poll for interrupts
-			if (OpCode <= 255 && (                   //don't poll if interrupt sequence
-				(t == 2 && OpCodeCycle == 1)         //for 2 cycle instructions, poll after 1st cycle
-				|| (t > 2 && OpCodeCycle == t - 1))) //for >2 cycle instructions, poll on last cycle
+			// poll for interrupts
+			if (OpCode <= 255                        // don't poll if interrupt sequence
+				&& ((t == 2 && OpCodeCycle == 1)     // for 2 cycle instructions, poll after 1st cycle
+				|| (t > 2 && OpCodeCycle == t - 1))) // for >2 cycle instructions, poll on last cycle
 			{
 				IRQSignal = IRQLevelDetector;
 				if (NMIEdgeDetector)
@@ -85,12 +91,12 @@ namespace K6502Emu
 		protected void EndInstruction() => instructionEnded = true;
 
 
-		//helper methods for instructions
+		// helper methods for instructions
 		private byte SetFlagsZN(byte val)
 		{
 			P.Zero = val == 0;
-			//bit 7 can be seen as sign in 2's complement numbers
-			//since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
+			// bit 7 can be seen as sign in 2's complement numbers
+			// since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
 			P.Negative = val >= 128;
 			return val;
 		}
@@ -108,7 +114,7 @@ namespace K6502Emu
 
 			if (DecimalModeEnabled && P.Decimal)
 			{
-				//decimal/BCD mode (for 6510)
+				// decimal/BCD mode (for 6510)
 
 				/*
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
@@ -119,41 +125,41 @@ namespace K6502Emu
 				 * Another useful resource for decimal mode implementation is
 				 * http://www.6502.org/tutorials/decimal_mode.html#A
 				 * 
-				 * The results of those code have been tested with the values from
+				 * The results of this code has been tested against the results from
 				 * http://visual6502.org/wiki/index.php?title=6502DecimalMode
 				 */
 
-				//lower nibble
+				// lower nibble
 				int low = (A & 0x0f) + (val & 0x0f) + carry;
-				//upper nibble
+				// upper nibble
 				int high = (A >> 4) + (val >> 4) + (low > 0x09 ? 1 : 0);
 
-				//the zero flag is set exactly like in decimal mode
+				// the zero flag is set exactly like in decimal mode
 				P.Zero = ((A + val + carry) & 0xff) == 0;
 
-				//BCD fixup for lower nibble
+				// BCD fixup for lower nibble
 				if (low > 9)
 					low += 6;
 
-				//these flags are set after the lower nibble fixup, but before the upper nibble fixup
+				// these flags are set after the lower nibble fixup, but before the upper nibble fixup
 				P.Negative = (high & 0x8) != 0;
 				P.Overflow = ((((high << 4) ^ A) & 0x80) != 0) && !(((A ^ val) & 0x80) != 0);
 
-				//BCD fixup for upper nibble
+				// BCD fixup for upper nibble
 				if (high > 9)
 					high += 6;
 
 				P.Carry = high > 15;
-				A = (byte)(((high & 0xf) << 4) | (low & 0xf)); //combining the lower and upper nibbles
+				A = (byte)(((high & 0xf) << 4) | (low & 0xf)); // combining the lower and upper nibbles
 			}
 			else
 			{
-				//binary mode
-				int uT = A + val + carry; //sum them all as ints (so the result isn't limited to the byte range)
-				int sT = (sbyte)A + (sbyte)val + (sbyte)carry; //cast all to sbyte, then sum them as ints
-				P.Carry = uT > 255 || uT < 0; //if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; //if signed over/underflow
-				A = SetFlagsZN((byte)(uT & 0xff)); //lowest 8 bits go into A and set flags Zero and Negative
+				// binary mode
+				int uT = A + val + carry; // sum them all as ints (so the result isn't limited to the byte range)
+				int sT = (sbyte)A + (sbyte)val + (sbyte)carry; // cast all to sbyte, then sum them as ints
+				P.Carry = uT > 255 || uT < 0; // if unisgned over/underflow
+				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
+				A = SetFlagsZN((byte)(uT & 0xff)); // lowest 8 bits go into A and set flags Zero and Negative
 			}
 		}
 
@@ -163,7 +169,7 @@ namespace K6502Emu
 
 			if (DecimalModeEnabled && P.Decimal)
 			{
-				//decimal mode
+				// decimal mode
 
 				/*
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
@@ -171,64 +177,64 @@ namespace K6502Emu
 				 * Another useful resource for decimal mode implementation is
 				 * http://www.6502.org/tutorials/decimal_mode.html#A
 				 *
-				 * The results of those code have been tested with the values from
+				 * The results of this code has been tested against the results from
 				 * http://visual6502.org/wiki/index.php?title=6502DecimalMode
 				 */
 
-				//lower nibble
+				// lower nibble
 				int low = (byte)((A & 0x0f) - (val & 0x0f) - borrow);
 
-				//upper nibble
+				// upper nibble
 				int high = (byte)((A >> 4) - (val >> 4) - (low > 0xf ? 1 : 0));
 
-				//BCD fixup for lower nibble
+				// BCD fixup for lower nibble
 				if (low > 0xf)
 					low -= 6;
-				//BCD fixup of upper nibble
+				// BCD fixup of upper nibble
 				if (high > 0xf)
 					high -= 6;
 
-				//all flags are set exactly like in binary mode
+				// all flags are set exactly like in binary mode
 				int uT = A - val - borrow;
-				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; //cast all to sbyte, then sum them as ints
-				P.Carry = !(uT > 255 || uT < 0); //if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; //if signed over/underflow
+				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
+				P.Carry = !(uT > 255 || uT < 0); // if unisgned over/underflow
+				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
 
-				//in decimal mode
+				// in decimal mode
 				A = SetFlagsZN((byte)(((high & 0xf) << 4) | (low & 0xf)));
 			}
 			else
 			{
-				//binary/BCD mode
-				int uT = A - val - borrow; //sum them all as ints (so the result isn't limited to the byte range)
-				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; //cast all to sbyte, then sum them as ints
-				P.Carry = !(uT > 255 || uT < 0); //if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; //if signed over/underflow
-				A = SetFlagsZN((byte)(uT & 0xff)); //lowest 8 bits go into A and set flags Zero and Negative
+				// binary/BCD mode
+				int uT = A - val - borrow; // sum them all as ints (so the result isn't limited to the byte range)
+				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
+				P.Carry = !(uT > 255 || uT < 0); // if unisgned over/underflow
+				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
+				A = SetFlagsZN((byte)(uT & 0xff)); // lowest 8 bits go into A and set flags Zero and Negative
 			}
 		}
 
 		private byte DoASL(byte val)
 		{
-			//shift left: C <- val <- 0
+			// shift left: C <- val <- 0
 			int t = val << 1;
 			P.Carry = (t & 0x100) > 0;
-			val = (byte)(t & 0xff); //trimming with & just to be sure
+			val = (byte)(t & 0xff); // trimming with & just to be sure
 			return SetFlagsZN(val);
 		}
 
 		private byte DoROL(byte val)
 		{
-			//rotate left with carry: C <- val <- C
+			// rotate left with carry: C <- val <- C
 			int t = (val << 1) | (P.Carry ? 1 : 0);
 			P.Carry = (t & 0x100) > 0;
-			val = (byte)(t & 0xff); //trimming with & just to be sure
+			val = (byte)(t & 0xff); // trimming with & just to be sure
 			return SetFlagsZN(val);
 		}
 
 		private byte DoLSR(byte val)
 		{
-			//shift right: 0 -> val -> C
+			// shift right: 0 -> val -> C
 			int t = val >> 1;
 			P.Carry = (val & 1) > 0;
 			val = (byte)t;
@@ -237,7 +243,7 @@ namespace K6502Emu
 
 		private byte DoROR(byte val)
 		{
-			//rotate right with carry: C -> val -> C
+			// rotate right with carry: C -> val -> C
 			int t = (val >> 1) | (P.Carry ? 0x80 : 0x00);
 			P.Carry = (val & 1) > 0;
 			val = (byte)t;

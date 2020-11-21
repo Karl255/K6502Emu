@@ -2,31 +2,30 @@
 
 namespace K6502Emu
 {
-	public class Memory : Component
+	public class Memory<TDataSize> : IAddressable<TDataSize>
 	{
-		protected byte[] memory;
+		protected TDataSize[] memory;
+		public int AddressableSize { get; private set; }
+		public bool IsReadonly { get; set; }
 
-		public Memory(Range addressRange)
+		public Memory(int size) =>
+			memory = new TDataSize[size];
+
+		public Memory(int size, TDataSize[] data)
 		{
-			AddressRange = addressRange;
-			memory = new byte[addressRange.End.Value - addressRange.Start.Value + 1];
-		}
+			memory = new TDataSize[size];
+			AddressableSize = size;
 
-		public Memory(Range addressRange, byte[] data) : this(addressRange)
-		{
-			for (int i = 0; i < data.Length; i++)
-			{
-				if (i >= memory.Length)
-					break;
+			int end = Math.Min(memory.Length, data.Length);
 
+			for (int i = 0; i < end; i++)
 				memory[i] = data[i];
-			}
 		}
 
-		public override byte this[ushort address]
+		public TDataSize this[int address]
 		{
-			get => memory[address - AddressRange.Start.Value];
-			set { if (!IsReadOnly) memory[address - AddressRange.Start.Value] = value; }
+			get => memory[address];
+			set => memory[address] = value;
 		}
 	}
 }

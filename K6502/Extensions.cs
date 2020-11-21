@@ -4,6 +4,10 @@ namespace K6502Emu
 {
 	internal static class Extensions
 	{
-		public static bool InRange(this ushort @this, Range range) => @this >= range.Start.Value && @this <= range.End.Value;
+		public static bool IsInRange(this int @this, int start, int end) =>
+			@this >= start && @this <= end;
+
+		public static bool IsInRange(this int @this, Range range) =>
+			@this.IsInRange(range.Start.Value, range.End.Value);
 	}
 }

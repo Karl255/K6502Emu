@@ -22,7 +22,7 @@ namespace K6502Emu.UnitTests
 
 			if (DecimalModeEnabled && P.Decimal)
 			{
-				//decimal/BCD mode (for 6510)
+				// decimal/BCD mode (for 6510)
 
 				/*
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
@@ -33,41 +33,41 @@ namespace K6502Emu.UnitTests
 				 * Another useful resource for decimal mode implementation is
 				 * http://www.6502.org/tutorials/decimal_mode.html#A
 				 * 
-				 * The results of those code have been tested with the values from
+				 * The results of this code has been tested against the values from
 				 * http://visual6502.org/wiki/index.php?title=6502DecimalMode
 				 */
 
-				//lower nibble
+				// lower nibble
 				int low = (A & 0x0f) + (val & 0x0f) + carry;
-				//upper nibble
+				// upper nibble
 				int high = (A >> 4) + (val >> 4) + (low > 0x09 ? 1 : 0);
 
-				//the zero flag is set exactly like in decimal mode
+				// the zero flag is set exactly like in decimal mode
 				P.Zero = ((A + val + carry) & 0xff) == 0;
 
-				//BCD fixup for lower nibble
+				// BCD fixup for lower nibble
 				if (low > 9)
 					low += 6;
 
-				//these flags are set after the lower nibble fixup, but before the upper nibble fixup
+				// these flags are set after the lower nibble fixup, but before the upper nibble fixup
 				P.Negative = (high & 0x8) != 0;
 				P.Overflow = ((((high << 4) ^ A) & 0x80) != 0) && !(((A ^ val) & 0x80) != 0);
 
-				//BCD fixup for upper nibble
+				// BCD fixup for upper nibble
 				if (high > 9)
 					high += 6;
 
 				P.Carry = high > 15;
-				A = (byte)(((high & 0xf) << 4) | (low & 0xf)); //combining the lower and upper nibbles
+				A = (byte)(((high & 0xf) << 4) | (low & 0xf)); // combining the lower and upper nibbles
 			}
 			else
 			{
-				//binary mode
-				int uT = A + val + carry; //sum them all as ints (so the result isn't limited to the byte range)
-				int sT = (sbyte)A + (sbyte)val + (sbyte)carry; //cast all to sbyte, then sum them as ints
-				P.Carry = uT > 255 || uT < 0; //if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; //if signed over/underflow
-				A = SetFlagsZN((byte)(uT & 0xff)); //lowest 8 bits go into A and set flags Zero and Negative
+				// binary mode
+				int uT = A + val + carry; // sum them all as ints (so the result isn't limited to the byte range)
+				int sT = (sbyte)A + (sbyte)val + (sbyte)carry; // cast all to sbyte, then sum them as ints
+				P.Carry = uT > 255 || uT < 0; // if unisgned over/underflow
+				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
+				A = SetFlagsZN((byte)(uT & 0xff)); // lowest 8 bits go into A and set flags Zero and Negative
 			}
 		}
 
@@ -77,7 +77,7 @@ namespace K6502Emu.UnitTests
 
 			if (DecimalModeEnabled && P.Decimal)
 			{
-				//decimal mode
+				// decimal mode
 
 				/*
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
@@ -85,48 +85,48 @@ namespace K6502Emu.UnitTests
 				 * Another useful resource for decimal mode implementation is
 				 * http://www.6502.org/tutorials/decimal_mode.html#A
 				 *
-				 * The results of those code have been tested with the values from
+				 * The results of this code has been tested against the values from
 				 * http://visual6502.org/wiki/index.php?title=6502DecimalMode
 				 */
 
-				//lower nibble
+				// lower nibble
 				int low = (byte)((A & 0x0f) - (val & 0x0f) - borrow);
 
-				//upper nibble
+				// upper nibble
 				int high = (byte)((A >> 4) - (val >> 4) - (low > 0xf ? 1 : 0));
 
-				//BCD fixup for lower nibble
+				// BCD fixup for lower nibble
 				if (low > 0xf)
 					low -= 6;
-				//BCD fixup of upper nibble
+				// BCD fixup of upper nibble
 				if (high > 0xf)
 					high -= 6;
 
-				//all flags are set exactly like in binary mode
+				// all flags are set exactly like in binary mode
 				int uT = A - val - borrow;
-				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; //cast all to sbyte, then sum them as ints
-				P.Carry = !(uT > 255 || uT < 0); //if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; //if signed over/underflow
+				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
+				P.Carry = !(uT > 255 || uT < 0); // if unisgned over/underflow
+				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
 
-				//in decimal mode
+				// in decimal mode
 				A = SetFlagsZN((byte)(((high & 0xf) << 4) | (low & 0xf)));
 			}
 			else
 			{
-				//binary/BCD mode
-				int uT = A - val - borrow; //sum them all as ints (so the result isn't limited to the byte range)
-				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; //cast all to sbyte, then sum them as ints
-				P.Carry = !(uT > 255 || uT < 0); //if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; //if signed over/underflow
-				A = SetFlagsZN((byte)(uT & 0xff)); //lowest 8 bits go into A and set flags Zero and Negative
+				// binary/BCD mode
+				int uT = A - val - borrow; // sum them all as ints (so the result isn't limited to the byte range)
+				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
+				P.Carry = !(uT > 255 || uT < 0); // if unisgned over/underflow
+				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
+				A = SetFlagsZN((byte)(uT & 0xff)); // lowest 8 bits go into A and set flags Zero and Negative
 			}
 		}
 
 		private byte SetFlagsZN(byte val)
 		{
 			P.Zero = val == 0;
-			//bit 7 can be seen as sign in 2's complement numbers
-			//since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
+			// bit 7 can be seen as sign in 2's complement numbers
+			// since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
 			P.Negative = val >= 128;
 			return val;
 		}
@@ -148,7 +148,7 @@ namespace K6502Emu.UnitTests
 			P.Carry = C == 1;
 			DoADC(val);
 
-			Assert.Equal(sum.ToString("X"), this.A.ToString("X")); //convert to hex for easier reading
+			Assert.Equal(sum.ToString("X"), this.A.ToString("X")); // convert to hex for easier reading
 			Assert.Equal(negative, P.Negative);
 			Assert.Equal(overflow, P.Overflow);
 			Assert.Equal(zero, P.Zero);
@@ -170,7 +170,7 @@ namespace K6502Emu.UnitTests
 			P.Carry = C == 1;
 			DoSBC(val);
 
-			Assert.Equal(diff.ToString("X"), this.A.ToString("X")); //convert to hex for easier reading
+			Assert.Equal(diff.ToString("X"), this.A.ToString("X")); // convert to hex for easier reading
 			Assert.Equal(negative, P.Negative);
 			Assert.Equal(overflow, P.Overflow);
 			Assert.Equal(zero, P.Zero);
