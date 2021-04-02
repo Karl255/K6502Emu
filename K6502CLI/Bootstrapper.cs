@@ -6,23 +6,49 @@ namespace K6502CLI
 {
 	class Bootstrapper
 	{
-		static void Main(string[] args)
+		// source: https://github.com/Klaus2m5/6502_65C02_functional_tests
+		private static readonly string BinaryPath = "6502_functional_test.bin";
+		//private static readonly string BinaryPath = "rom.bin";
+		private static K6502Emu.Memory<byte> Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
+		private static K6502 Cpu = new K6502(Memory);
+		private static byte Page = 0;
+
+		static void Main()
 		{
-			//var data = File.ReadAllBytes("input.rom");
-			var rng = new Random();
-			byte[] data = new byte[0xffff + 1];
-			for (int i = 0; i < data.Length; i++)
-				data[i] = (byte)rng.Next();
+			InitUI();
 
-			var mem = new K6502Emu.Memory<byte>(0xffff + 1, data);
-
-			var bus = new Bus(0xffff + 1) // 64 kB, although it's completely irrelevant
+			while (true)
 			{
-				{ 0, mem }
-			};
+				UpdateUI();
+				Console.WriteLine(' '); // clears last typed char
 
-			var cpu = new K6502(bus);
+				switch (Console.ReadKey().Key)
+				{
+					case ConsoleKey.Spacebar:
+						Cpu.Tick();
+						break;
 
+					case ConsoleKey.LeftArrow:
+						Page--;
+						break;
+
+					case ConsoleKey.RightArrow:
+						Page++;
+						break;
+
+					case ConsoleKey.R:
+						Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
+						Cpu = new K6502(Memory);
+						break;
+
+					default:
+						continue;
+				}
+			}
+		}
+
+		private static void InitUI()
+		{
 			Console.CursorVisible = false;
 
 			for (int i = 0; i < 16; i++)
@@ -31,62 +57,76 @@ namespace K6502CLI
 				Console.Write($"{i:X2}");
 
 				Console.SetCursorPosition(0, i + 1);
-				Console.Write($"{i:X2}");
+				Console.Write($"{i:X}0");
+
+				Console.SetCursorPosition(63, 7);
+				Console.Write("NV-BDIZC");
 			}
+		}
 
-			int page = 0;
-
-			while (true)
+		private static void UpdateUI()
+		{
+			// selected page contents
+			for (int i = 0; i < 256; i++)
 			{
-				// selected page
-				for (int i = 0; i < 256; i++)
+				if ((Cpu.GetPC >> 8) == Page && (Cpu.GetPC & 0xff) == i)
 				{
-					Console.SetCursorPosition((i % 16 + 1) * 3, i / 16 + 1);
-					Console.Write($"{mem[page * 0x0100 + i]:X2}");
+					Console.ForegroundColor = ConsoleColor.Green;
 				}
 
-				Console.SetCursorPosition(54, 1);
-				Console.Write($"Current page: {page:X2}00");
+				Console.SetCursorPosition((i % 16 + 1) * 3, i / 16 + 1);
+				Console.Write($"{Memory[Page * 0x0100 + i]:X2}");
 
-				Console.SetCursorPosition(54, 3);
-				Console.Write($"PC: {cpu.GetPC:X4}");
-
-				Console.SetCursorPosition(54, 4);
-				Console.Write($"OpCode: {cpu.GetOpCode:X2} Cycle: {cpu.GetCycle}");
-
-				Console.SetCursorPosition(54, 5);
-				Console.Write($"A: {cpu.GetA:X2}");
-
-				Console.SetCursorPosition(54, 6);
-				Console.Write($"X: {cpu.GetX:X2}");
-
-				Console.SetCursorPosition(54, 7);
-				Console.Write($"Y: {cpu.GetY:X2}");
-
-				Console.SetCursorPosition(54, 8);
-				Console.Write($"S: {cpu.GetS:X2}");
-
-				Console.SetCursorPosition(54, 9);
-				Console.Write($"P: {cpu.GetP:X2}");
-
-
-				switch (Console.ReadKey().Key)
+				if ((Cpu.GetPC >> 8) == Page && (Cpu.GetPC & 0xff) == i)
 				{
-					case ConsoleKey.Enter:
-						cpu.Tick();
-						break;
-					case ConsoleKey.UpArrow:
-						if (page > 0)
-							page--;
-						break;
-					case ConsoleKey.DownArrow:
-						if (page < 255)
-							page++;
-						break;
-					default:
-						continue;
+					Console.ForegroundColor = ConsoleColor.Gray;
 				}
 			}
+
+			// page index (higher memory address byte)
+			Console.SetCursorPosition(54, 1);
+			Console.Write($"Current page: {Page:X2}00");
+
+			// program counter
+			Console.SetCursorPosition(54, 3);
+			Console.Write($"PC: {Cpu.GetPC:X4}");
+
+			// current opcode and cycle
+			Console.SetCursorPosition(54, 4);
+			Console.Write($"OpCode: {(Cpu.GetCycle > 0 ? $"{Cpu.GetOpCode:X2}" : "??")} Cycle: {Cpu.GetCycle}");
+
+			// A register
+			Console.SetCursorPosition(54, 5);
+			Console.Write($"A: {Cpu.GetA:X2}");
+
+			// X register
+			Console.SetCursorPosition(54, 6);
+			Console.Write($"X: {Cpu.GetX:X2}");
+
+			// Y register
+			Console.SetCursorPosition(54, 7);
+			Console.Write($"Y: {Cpu.GetY:X2}");
+
+			// stack register
+			Console.SetCursorPosition(54, 8);
+			Console.Write($"S: {Cpu.GetS:X2}");
+
+			// status register
+			Console.SetCursorPosition(63, 8);
+			Console.Write(FormatStatus(Cpu.GetP));
+		}
+
+		private static string FormatStatus(byte status)
+		{
+			string r = "";
+
+			for (int i = 0; i < 8; i++)
+			{
+				r += i == 2 ? '-' : (status & 0x80) != 0 ? '1' : '0';
+				status <<= 1;
+			}
+
+			return r;
 		}
 	}
 }

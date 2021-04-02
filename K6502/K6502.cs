@@ -12,8 +12,8 @@ namespace K6502Emu
 		private byte _x = 0;
 		private byte _y = 0;
 
-		protected DoubleRegister Address = new DoubleRegister { Whole = 0 }; // memory address register
-		protected DoubleRegister PC = new DoubleRegister { Whole = 0xfffc }; // program counter
+		protected DoubleRegister Address; // memory address register
+		protected DoubleRegister PC = new DoubleRegister(0xfffc); // program counter
 		protected StatusRegister P = new StatusRegister(); // status register: N V - B D I Z C
 		protected byte S = 0xFD; // stack pointer
 
@@ -78,7 +78,10 @@ namespace K6502Emu
 			 */
 
 			if (OpCodeCycle == Instructions[OpCode].Length - 1 || instructionEnded)
+			{
 				OpCodeCycle = 0;
+				instructionEnded = false;
+			}
 			else
 				OpCodeCycle++;
 		}
