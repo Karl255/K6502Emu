@@ -286,8 +286,8 @@ namespace K6502Emu
 		private void NOP_d_2() => _ = Memory[Address.Lower];          // read from address and throw away
 
 		// 08 PHP - push processor status on stack
-		private void PHP_1() => _ = Memory[PC.Whole];          // read next instruction byte (throw away)
-		private void PHP_2() => Memory[0x0100 + S--] = P.Byte; // push P on stack
+		private void PHP_1() => _ = Memory[PC.Whole];                // read next instruction byte (throw away)
+		private void PHP_2() => Memory[0x0100 + S--] = (byte)P.Byte; // push P on stack
 
 		// 0C *NOP abs
 		private void NOP_a_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -305,12 +305,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BPL_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -345,7 +345,7 @@ namespace K6502Emu
 
 		// 20 JSR abs
 		private void JSR_1() => Address.Lower = Memory[PC.Whole++];                       // fetch low address byte, inc. PC
-		private void JSR_2() { }                                                          // internal operation (predecrement S), don't emulate
+		private void JSR_2() { }                                                          // internal operation (predecrement S?), don't emulate
 		private void JSR_3() => Memory[0x0100 + S--] = PC.Upper;                          // push PCH on stack
 		private void JSR_4() => Memory[0x0100 + S--] = PC.Lower;                          // push PCL on stack
 		private void JSR_5() => (PC.Lower, PC.Upper) = (Address.Lower, Memory[PC.Whole]); // copy adr. low to PCL, fetch adr. high into PCH
@@ -361,7 +361,7 @@ namespace K6502Emu
 		}
 
 		// 28 PLP
-		private void PLP_1() => _ = Memory[PC.Whole++];      // fetch next instruction byte (throw away)
+		private void PLP_1() => _ = Memory[PC.Whole];        // fetch next instruction byte (throw away)
 		private void PLP_2() => S++;                         // increment S
 		private void PLP_3() => P.Byte = Memory[0x0100 + S]; // pull P from stack
 
@@ -387,12 +387,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BMI_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -428,12 +428,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BVC_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -450,7 +450,7 @@ namespace K6502Emu
 		private void RTS_5() => PC.Whole++;
 
 		// 68 PLA
-		private void PLA_1() => _ = Memory[PC.Whole++];             // fetch next instruction byte (throw away)
+		private void PLA_1() => _ = Memory[PC.Whole];               // fetch next instruction byte (throw away)
 		private void PLA_2() => S++;                                // increment S
 		private void PLA_3() => A = SetFlagsZN(Memory[0x0100 + S]); // pull P from stack
 
@@ -474,12 +474,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BVS_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -515,12 +515,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BCC_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -576,12 +576,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BCS_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -638,12 +638,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BNE_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -678,12 +678,12 @@ namespace K6502Emu
 		{
 			int t = PC.Lower + (sbyte)Operand;
 			PC.Lower += Operand;          // add operand to lower byte of PC
-			if (t >= 0 || t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
+			if (t >= 0 && t <= 255)       // if page wasn't crossed, end, otherwise add another cycle
 				EndInstruction();
 		}
 		private void BEQ_3()
 		{
-			if (PC.Lower - Operand < 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page

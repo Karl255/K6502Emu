@@ -1,18 +1,50 @@
 ﻿namespace K6502Emu
 {
-	// TODO: restructure this so it stores the flags separately as bools and the Byte property being constructed from those bools
 	public class StatusRegister
 	{
-		private byte _byte = 0b0011_0100; // power up value is supposedly 0x34
-		public byte Byte { get => _byte; set => _byte = (byte)(value | 0b0010_0000); }
+		public bool Carry;
+		public bool Zero;
+		public bool Interrupt;
+		public bool Decimal;
+		public bool Break;
+		// bit 5 doesn't exist        
+		public bool Overflow;
+		public bool Negative;
 
-		public bool Negative  { get => (_byte & 1 << 7) > 0; set => _byte = (byte)(_byte & ~(1 << 7) | (value ? 1 : 0) << 7); }
-		public bool Overflow  { get => (_byte & 1 << 6) > 0; set => _byte = (byte)(_byte & ~(1 << 6) | (value ? 1 : 0) << 6); }
-		// bit 5 is unused
-		public bool Break     { get => (_byte & 1 << 4) > 0; set => _byte = (byte)(_byte & ~(1 << 4) | (value ? 1 : 0) << 4); }
-		public bool Decimal   { get => (_byte & 1 << 3) > 0; set => _byte = (byte)(_byte & ~(1 << 3) | (value ? 1 : 0) << 3); }
-		public bool Interrupt { get => (_byte & 1 << 2) > 0; set => _byte = (byte)(_byte & ~(1 << 2) | (value ? 1 : 0) << 2); }
-		public bool Zero      { get => (_byte & 1 << 1) > 0; set => _byte = (byte)(_byte & ~(1 << 1) | (value ? 1 : 0) << 1); }
-		public bool Carry     { get => (_byte & 1 << 0) > 0; set => _byte = (byte)(_byte & ~(1 << 0) | (value ? 1 : 0) << 0); }
+		public int Byte
+		{
+			get => ((Carry     ? 1 : 0) << 0)
+				|  ((Zero      ? 1 : 0) << 1)
+				|  ((Interrupt ? 1 : 0) << 2)
+				|  ((Decimal   ? 1 : 0) << 3)
+				|  ((Break     ? 1 : 0) << 4)
+				|  (                  1 << 5)
+				|  ((Overflow  ? 1 : 0) << 6)
+				|  ((Negative  ? 1 : 0) << 7);
+
+			set
+			{
+				Carry     = (value & 0b0000_0001) != 0;
+				Zero      = (value & 0b0000_0010) != 0;
+				Interrupt = (value & 0b0000_0100) != 0;
+				Decimal   = (value & 0b0000_1000) != 0;
+				// break flag is readonly
+				// bit 5 doesn't exist
+				Overflow  = (value & 0b0100_0000) != 0;
+				Negative  = (value & 0b1000_0000) != 0;
+			}
+		}
+
+		public StatusRegister(byte initial)
+		{
+			Carry     = (initial & 0b0000_0001) != 0;
+			Zero      = (initial & 0b0000_0010) != 0;
+			Interrupt = (initial & 0b0000_0100) != 0;
+			Decimal   = (initial & 0b0000_1000) != 0;
+			Break     = (initial & 0b0001_0000) != 0;
+			// bit 5 doesn't exist
+			Overflow  = (initial & 0b0100_0000) != 0;
+			Negative  = (initial & 0b1000_0000) != 0;
+		}
 	}
 }

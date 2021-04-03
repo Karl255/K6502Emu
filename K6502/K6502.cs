@@ -4,6 +4,7 @@ namespace K6502Emu
 {
 	public partial class K6502
 	{
+		// TODO: remove the SetFlagsZN calls
 		// the flags zero and negative are set/cleared when X/Y get loaded in any way
 		// A doesn't have that because of decimal mode
 		protected byte A { get; set; } = 0;
@@ -14,14 +15,14 @@ namespace K6502Emu
 
 		protected DoubleRegister Address; // memory address register
 		protected DoubleRegister PC = new DoubleRegister(0xfffc); // program counter
-		protected StatusRegister P = new StatusRegister(); // status register: N V - B D I Z C
+		protected StatusRegister P = new StatusRegister(0b0011_0100); // status register: N V - B D I Z C
 		protected byte S = 0xFD; // stack pointer
 
 		// properties for getting the internal state from outside
 		public byte GetA => A;
 		public byte GetX => X;
 		public byte GetY => Y;
-		public byte GetP => P.Byte;
+		public byte GetP => (byte)P.Byte;
 		public byte GetS => S;
 		public ushort GetPC => PC.Whole;
 		public int GetCycle => OpCodeCycle;

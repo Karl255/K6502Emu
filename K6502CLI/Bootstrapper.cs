@@ -13,6 +13,10 @@ namespace K6502CLI
 		private static K6502 Cpu = new K6502(Memory);
 		private static byte Page = 0;
 
+		private static ConsoleColor FgColorStatic = ConsoleColor.Blue;
+		private static ConsoleColor FgColorDynamic = ConsoleColor.Gray;
+		private static ConsoleColor AccentColor = ConsoleColor.Red;
+
 		static void Main()
 		{
 			InitUI();
@@ -40,6 +44,16 @@ namespace K6502CLI
 						Cpu = new K6502(Memory);
 						break;
 
+					case ConsoleKey.N: // do 10 ticks
+						for (int i = 0; i < 10; i++)
+							Cpu.Tick();
+						break;
+
+					case ConsoleKey.M: // do 100 ticks
+						for (int i = 0; i < 100; i++)
+							Cpu.Tick();
+						break;
+
 					default:
 						continue;
 				}
@@ -49,6 +63,7 @@ namespace K6502CLI
 		private static void InitUI()
 		{
 			Console.CursorVisible = false;
+			Console.ForegroundColor = FgColorStatic;
 
 			for (int i = 0; i < 16; i++)
 			{
@@ -57,10 +72,41 @@ namespace K6502CLI
 
 				Console.SetCursorPosition(0, i + 1);
 				Console.Write($"{i:X}0");
-
-				Console.SetCursorPosition(63, 7);
-				Console.Write("NV-BDIZC");
 			}
+
+			// page index (higher memory address byte)
+			Console.SetCursorPosition(54, 1);
+			Console.Write($"Current page:");
+
+			// program counter
+			Console.SetCursorPosition(54, 3);
+			Console.Write($"PC:");
+
+			// current opcode and cycle
+			Console.SetCursorPosition(54, 4);
+			Console.Write($"OpCode:    Cycle:");
+
+			// A register
+			Console.SetCursorPosition(54, 5);
+			Console.Write($"A:");
+
+			// X register
+			Console.SetCursorPosition(54, 6);
+			Console.Write($"X:");
+
+			// Y register
+			Console.SetCursorPosition(54, 7);
+			Console.Write($"Y:");
+
+			// stack register
+			Console.SetCursorPosition(54, 8);
+			Console.Write($"S:");
+
+			// status register
+			Console.SetCursorPosition(63, 7);
+			Console.Write("NV-BDIZC");
+
+			Console.ForegroundColor = FgColorDynamic;
 		}
 
 		private static void UpdateUI()
@@ -70,7 +116,7 @@ namespace K6502CLI
 			{
 				if ((Cpu.GetPC >> 8) == Page && (Cpu.GetPC & 0xff) == i)
 				{
-					Console.ForegroundColor = ConsoleColor.Green;
+					Console.ForegroundColor = AccentColor;
 				}
 
 				Console.SetCursorPosition((i % 16 + 1) * 3, i / 16 + 1);
@@ -78,37 +124,39 @@ namespace K6502CLI
 
 				if ((Cpu.GetPC >> 8) == Page && (Cpu.GetPC & 0xff) == i)
 				{
-					Console.ForegroundColor = ConsoleColor.Gray;
+					Console.ForegroundColor = FgColorDynamic;
 				}
 			}
 
 			// page index (higher memory address byte)
-			Console.SetCursorPosition(54, 1);
-			Console.Write($"Current page: {Page:X2}00");
+			Console.SetCursorPosition(68, 1);
+			Console.Write($"{Page:X2}00");
 
 			// program counter
-			Console.SetCursorPosition(54, 3);
-			Console.Write($"PC: {Cpu.GetPC:X4}");
+			Console.SetCursorPosition(58, 3);
+			Console.Write($"{Cpu.GetPC:X4}");
 
 			// current opcode and cycle
-			Console.SetCursorPosition(54, 4);
-			Console.Write($"OpCode: {(Cpu.GetCycle > 0 ? $"{Cpu.GetOpCode:X2}" : "??")} Cycle: {Cpu.GetCycle}");
+			Console.SetCursorPosition(62, 4);
+			Console.Write(Cpu.GetCycle > 0 ? $"{Cpu.GetOpCode:X2}" : "??");
+			Console.SetCursorPosition(72, 4);
+			Console.Write($"{Cpu.GetCycle}");
 
 			// A register
-			Console.SetCursorPosition(54, 5);
-			Console.Write($"A: {Cpu.GetA:X2}");
+			Console.SetCursorPosition(57, 5);
+			Console.Write($"{Cpu.GetA:X2}");
 
 			// X register
-			Console.SetCursorPosition(54, 6);
-			Console.Write($"X: {Cpu.GetX:X2}");
+			Console.SetCursorPosition(57, 6);
+			Console.Write($"{Cpu.GetX:X2}");
 
 			// Y register
-			Console.SetCursorPosition(54, 7);
-			Console.Write($"Y: {Cpu.GetY:X2}");
+			Console.SetCursorPosition(57, 7);
+			Console.Write($"{Cpu.GetY:X2}");
 
 			// stack register
-			Console.SetCursorPosition(54, 8);
-			Console.Write($"S: {Cpu.GetS:X2}");
+			Console.SetCursorPosition(57, 8);
+			Console.Write($"{Cpu.GetS:X2}");
 
 			// status register
 			Console.SetCursorPosition(63, 8);
