@@ -20,9 +20,8 @@ namespace K6502CLI
 			while (true)
 			{
 				UpdateUI();
-				Console.WriteLine(' '); // clears last typed char
 
-				switch (Console.ReadKey().Key)
+				switch (Console.ReadKey(true).Key)
 				{
 					case ConsoleKey.Spacebar:
 						Cpu.Tick();
