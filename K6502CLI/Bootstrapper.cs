@@ -9,9 +9,11 @@ namespace K6502CLI
 		// source: https://github.com/Klaus2m5/6502_65C02_functional_tests
 		private static readonly string BinaryPath = "6502_functional_test.bin";
 		//private static readonly string BinaryPath = "rom.bin";
-		private static K6502Emu.Memory<byte> Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
-		private static K6502 Cpu = new K6502(Memory);
-		private static byte Page = 0;
+		private static readonly int SkipToAddress = 0x28ad;
+
+		private static K6502Emu.Memory<byte> Memory;
+		private static K6502 Cpu;
+		private static byte Page;
 
 		private static ConsoleColor FgColorStatic = ConsoleColor.Blue;
 		private static ConsoleColor FgColorDynamic = ConsoleColor.Gray;
@@ -20,6 +22,7 @@ namespace K6502CLI
 		static void Main()
 		{
 			InitUI();
+			InitSystem(true);
 
 			while (true)
 			{
@@ -40,8 +43,7 @@ namespace K6502CLI
 						break;
 
 					case ConsoleKey.R:
-						Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
-						Cpu = new K6502(Memory);
+						InitSystem(true);
 						break;
 
 					case ConsoleKey.N: // do 10 ticks
@@ -58,6 +60,16 @@ namespace K6502CLI
 						continue;
 				}
 			}
+		}
+
+		private static void InitSystem(bool skipTo = false)
+		{
+			Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
+			Cpu = new K6502(Memory);
+
+			if (skipTo)
+				while (Cpu.GetPC != SkipToAddress)
+					Cpu.Tick();
 		}
 
 		private static void InitUI()
@@ -107,6 +119,8 @@ namespace K6502CLI
 			Console.Write("NV-BDIZC");
 
 			Console.ForegroundColor = FgColorDynamic;
+
+			Page = (byte)(SkipToAddress >> 8);
 		}
 
 		private static void UpdateUI()
@@ -130,7 +144,7 @@ namespace K6502CLI
 
 			// page index (higher memory address byte)
 			Console.SetCursorPosition(68, 1);
-			Console.Write($"{Page:X2}00");
+			Console.Write($"{Page:X2}xx");
 
 			// program counter
 			Console.SetCursorPosition(58, 3);

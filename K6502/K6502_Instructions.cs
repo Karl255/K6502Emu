@@ -8,6 +8,8 @@
  * instructions prefixed with * are unofficial/undocumented and are low priorits for implementing
  */
 
+// TODO: use consistent addressing mode names (eg. some zero-page instructions are marked with z and some with d)
+
 using System;
 using System.Diagnostics;
 
@@ -263,7 +265,7 @@ namespace K6502Emu
 			}
 			else if (IRQSignal && !P.Interrupt)
 			{
-				_ = Memory[PC.Whole]; // fetch opcode and discord
+				_ = Memory[PC.Whole]; // fetch opcode and discard
 				OpCode = 256;
 			}
 			else
@@ -273,12 +275,12 @@ namespace K6502Emu
 		// control instructions
 
 		// 00 BRK
-		private void BRK_1() => _ = Memory[PC.Whole++];                              // read next instruction byte (throw away), inc. PC
-		private void BRK_2() { Memory[0x0100 + S--] = PC.Upper; P.Break = true; }    // push PCH on stack, with B set
-		private void BRK_3() => Memory[0x0100 + S--] = PC.Lower;                     // push PCL on stack
-		private void BRK_4() => Memory[0x0100 + S--] = (byte)(P.Byte | 0b0001_0000); // push P on stack with B flag set
-		private void BRK_5() {  PC.Lower = Memory[0xFFFE]; P.Interrupt = true; }     // fetch IRQ interrupt vector lower
-		private void BRK_6() => PC.Upper = Memory[0xFFFF];                           // fetch IRQ interrupt vector upper
+		private void BRK_1() => _ = Memory[PC.Whole++];                                // read next instruction byte (throw away), inc. PC
+		private void BRK_2() => Memory[0x0100 + S--] = PC.Upper;                       // push PCH on stack, with B set
+		private void BRK_3() => Memory[0x0100 + S--] = PC.Lower;                       // push PCL on stack
+		private void BRK_4() => Memory[0x0100 + S--] = (byte)P.Byte;                   // push P on stack
+		private void BRK_5() {  PC.Lower = Memory[0xFFFE]; P.Interrupt = true; }       // fetch IRQ interrupt vector lower
+		private void BRK_6() => PC.Upper = Memory[0xFFFF];                             // fetch IRQ interrupt vector upper
 
 		// 04, 44, 64
 		// *NOP zpg
@@ -318,9 +320,9 @@ namespace K6502Emu
 
 		// 14, 34, 54, 74, D4, F4
 		// *NOP zpg,X
-		private void NOP_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void NOP_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void NOP_dx_3() => _ = Memory[Address.Lower];                         // read from address (throw away)
+		private void NOP_dx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address for operand, inc. PC
+		private void NOP_dx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void NOP_dx_3() => _ = Memory[Address.Lower];          // read from address (throw away)
 
 		// 18 CLC
 		private void CLC() => P.Carry = false; // clear carry
@@ -527,9 +529,9 @@ namespace K6502Emu
 		}
 
 		// 94 STY zpg,X
-		private void STY_dx_1() => Operand = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void STY_dx_2() => Address.Lower = (byte)(Memory[Operand] + X); // read from address and add X to it
-		private void STY_dx_3() => Memory[Address.Lower] = Y;                   // store Y at effective address
+		private void STY_dx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void STY_dx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void STY_dx_3() => Memory[Address.Lower] = Y;          // store Y at effective address
 
 		// 98 TYA
 		private void TYA() => A = SetFlagsZN(Y); // transfer Y to A
@@ -588,9 +590,9 @@ namespace K6502Emu
 		}
 
 		// B4 LDY zpg,X
-		private void LDY_dx_1() => Operand = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void LDY_dx_2() => Address.Lower = (byte)(Memory[Operand] + X); // read from address and add X to it
-		private void LDY_dx_3() => Y = SetFlagsZN(Memory[Address.Lower]);       // load Y from effective address
+		private void LDY_dx_1() => Address.Lower = Memory[PC.Whole++];    // fetch zero-page address, inc. PC
+		private void LDY_dx_2() => Address.Lower += X;                    // add X to the zero-page address
+		private void LDY_dx_3() => Y = SetFlagsZN(Memory[Address.Lower]); // load Y from effective address
 
 		// B8 CLV
 		private void CLV() => P.Overflow = false;
@@ -696,10 +698,10 @@ namespace K6502Emu
 		/* ALU operations */
 
 		// 01 ORA x,ind
-		private void ORA_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer address, inc. PC
-		private void ORA_xi_2() => Operand = (byte)(Memory[Operand] + X);  // read from pointer and add X to it
+		private void ORA_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer, inc. PC
+		private void ORA_xi_2() => Operand += X;                           // add X to the pointer
 		private void ORA_xi_3() => Address.Lower = Memory[Operand];        // fetch effective address low
-		private void ORA_xi_4() => Address.Upper = Memory[Operand];        // fetch effective address high
+		private void ORA_xi_4() => Address.Upper = Memory[Operand + 1];    // fetch effective address high
 		private void ORA_xi_5() => SetFlagsZN(A |= Memory[Address.Whole]); // read from effective address and OR with A
 
 		// 05 ORA zpg
@@ -738,9 +740,9 @@ namespace K6502Emu
 		private void ORA_iy_5() => SetFlagsZN(A |= Memory[Address.Whole]); // read from fixed effective address and OR with A
 
 		// 15 ORA zpg,x
-		private void ORA_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void ORA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void ORA_dx_3() => SetFlagsZN(A |= Memory[Address.Lower]);            // read from address and OR with A
+		private void ORA_dx_1() => Address.Lower = Memory[PC.Whole++];     // fetch zero-page address for operand, inc. PC
+		private void ORA_dx_2() => Address.Lower += X;                     // add X to the zero-page address
+		private void ORA_dx_3() => SetFlagsZN(A |= Memory[Address.Lower]); // read from address and OR with A
 
 		// 19 ORA abs,y
 		private void ORA_ay_1() => Address.Lower = Memory[PC.Whole++];     // fetch low byte of address, inc. PC
@@ -790,10 +792,10 @@ namespace K6502Emu
 		// NOTE: the following code (until the RMW instructions) was automatically generated
 
 		// 21 AND x,ind
-		private void AND_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer address, inc. PC
-		private void AND_xi_2() => Operand = (byte)(Memory[Operand] + X);  // read from pointer and add X to it
+		private void AND_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer, inc. PC
+		private void AND_xi_2() => Operand += X;                           // add X to the pointer
 		private void AND_xi_3() => Address.Lower = Memory[Operand];        // fetch effective address low
-		private void AND_xi_4() => Address.Upper = Memory[Operand];        // fetch effective address high
+		private void AND_xi_4() => Address.Upper = Memory[Operand + 1];    // fetch effective address high
 		private void AND_xi_5() => SetFlagsZN(A &= Memory[Address.Whole]); // read from effective address and AND with A
 
 		// 25 AND zpg
@@ -832,9 +834,9 @@ namespace K6502Emu
 		private void AND_iy_5() => SetFlagsZN(A &= Memory[Address.Whole]); // read from fixed effective address and AND with A
 
 		// 35 AND zpg,x
-		private void AND_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void AND_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void AND_dx_3() => SetFlagsZN(A &= Memory[Address.Lower]);            // read from address and AND with A
+		private void AND_dx_1() => Address.Lower = Memory[PC.Whole++];     // fetch zero-page address for operand, inc. PC
+		private void AND_dx_2() => Address.Lower += X;                     // add X to the zero-page address
+		private void AND_dx_3() => SetFlagsZN(A &= Memory[Address.Lower]); // read from address and AND with A
 
 		// 39 AND abs,y
 		private void AND_ay_1() => Address.Lower = Memory[PC.Whole++];     // fetch low byte of address, inc. PC
@@ -882,10 +884,10 @@ namespace K6502Emu
 
 
 		// 41 EOR x,ind
-		private void EOR_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer address, inc. PC
-		private void EOR_xi_2() => Operand = (byte)(Memory[Operand] + X);  // read from pointer and add X to it
+		private void EOR_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer, inc. PC
+		private void EOR_xi_2() => Operand += X;                           // add X to the pointer
 		private void EOR_xi_3() => Address.Lower = Memory[Operand];        // fetch effective address low
-		private void EOR_xi_4() => Address.Upper = Memory[Operand];        // fetch effective address high
+		private void EOR_xi_4() => Address.Upper = Memory[Operand + 1];    // fetch effective address high
 		private void EOR_xi_5() => SetFlagsZN(A ^= Memory[Address.Whole]); // read from effective address and XOR with A
 
 		// 45 EOR zpg
@@ -924,9 +926,9 @@ namespace K6502Emu
 		private void EOR_iy_5() => SetFlagsZN(A ^= Memory[Address.Whole]); // read from fixed effective address and XOR with A
 
 		// 55 EOR zpg,x
-		private void EOR_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void EOR_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void EOR_dx_3() => SetFlagsZN(A ^= Memory[Address.Lower]);            // read from address and XOR with A
+		private void EOR_dx_1() => Address.Lower = Memory[PC.Whole++];     // fetch zero-page address for operand, inc. PC
+		private void EOR_dx_2() => Address.Lower += X;                     // add X to the zero-page address
+		private void EOR_dx_3() => SetFlagsZN(A ^= Memory[Address.Lower]); // read from address and XOR with A
 
 		// 59 EOR abs,y
 		private void EOR_ay_1() => Address.Lower = Memory[PC.Whole++];     // fetch low byte of address, inc. PC
@@ -974,11 +976,11 @@ namespace K6502Emu
 
 
 		// 61 ADC x,ind
-		private void ADC_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer address, inc. PC
-		private void ADC_xi_2() => Operand = (byte)(Memory[Operand] + X); // read from pointer and add X to it
-		private void ADC_xi_3() => Address.Lower = Memory[Operand];       // fetch effective address low
-		private void ADC_xi_4() => Address.Upper = Memory[Operand];       // fetch effective address high
-		private void ADC_xi_5() => DoADC(Memory[Address.Whole]);          // read from effective address and perform addition
+		private void ADC_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
+		private void ADC_xi_2() => Operand += X;                        // add X to the pointer
+		private void ADC_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
+		private void ADC_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
+		private void ADC_xi_5() => DoADC(Memory[Address.Whole]);        // read from effective address and perform addition
 
 		// 65 ADC zpg
 		private void ADC_d_1() => Address.Lower = Memory[PC.Whole++];   // fetch zpg address
@@ -1016,9 +1018,9 @@ namespace K6502Emu
 		private void ADC_iy_5() => DoADC(Memory[Address.Whole]);    // read from fixed effective address and perform addition
 
 		// 75 ADC zpg,x
-		private void ADC_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void ADC_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void ADC_dx_3() => DoADC(Memory[Address.Lower]);                      // read from address and perform addition
+		private void ADC_dx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address for operand, inc. PC
+		private void ADC_dx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void ADC_dx_3() => DoADC(Memory[Address.Lower]);       // read from address and perform addition
 
 		// 79 ADC abs,y
 		private void ADC_ay_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1066,11 +1068,11 @@ namespace K6502Emu
 
 
 		// 81 STA x,ind
-		private void STA_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer address, inc. PC
-		private void STA_xi_2() => Operand = (byte)(Memory[Operand] + X); // read from pointer and add X to it
-		private void STA_xi_3() => Address.Lower = Memory[Operand];       // fetch effective address low
-		private void STA_xi_4() => Address.Upper = Memory[Operand];       // fetch effective address high
-		private void STA_xi_5() => Memory[Address.Whole] = A;             // store A at effective address
+		private void STA_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
+		private void STA_xi_2() => Operand += X;                        // add X to the pointer
+		private void STA_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
+		private void STA_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
+		private void STA_xi_5() => Memory[Address.Whole] = A;           // store A at effective address
 
 		// 85 STA zpg
 		private void STA_d_1() => Address.Lower = Memory[PC.Whole++]; // fetch zpg address
@@ -1103,9 +1105,9 @@ namespace K6502Emu
 		private void STA_iy_5() => Memory[Address.Whole] = A;       // store A effective address
 
 		// 95 STA zpg,x
-		private void STA_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void STA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void STA_dx_3() => Memory[Address.Lower] = A;                         // store A at zpg address
+		private void STA_dx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address for operand, inc. PC
+		private void STA_dx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void STA_dx_3() => Memory[Address.Lower] = A;          // store A at zpg address
 
 		// 99 STA abs,y
 		private void STA_ay_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1141,10 +1143,10 @@ namespace K6502Emu
 
 
 		// A1 LDA x,ind
-		private void LDA_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer address, inc. PC
-		private void LDA_xi_2() => Operand = (byte)(Memory[Operand] + X); // read from pointer and add X to it
+		private void LDA_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer, inc. PC
+		private void LDA_xi_2() => Operand += X;                          // add X to the pointer
 		private void LDA_xi_3() => Address.Lower = Memory[Operand];       // fetch effective address low
-		private void LDA_xi_4() => Address.Upper = Memory[Operand];       // fetch effective address high
+		private void LDA_xi_4() => Address.Upper = Memory[Operand + 1];   // fetch effective address high
 		private void LDA_xi_5() => A = SetFlagsZN(Memory[Address.Whole]); // load A from effective address
 
 		// A5 LDA zpg
@@ -1183,9 +1185,9 @@ namespace K6502Emu
 		private void LDA_iy_5() => A = SetFlagsZN(Memory[Address.Whole]); // add another cycle and load A from effective address
 
 		// B5 LDA zpg,x
-		private void LDA_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void LDA_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void LDA_dx_3() => A = SetFlagsZN(Memory[Address.Lower]);             // load A from address
+		private void LDA_dx_1() => Address.Lower = Memory[PC.Whole++];    // fetch zero-page address for operand, inc. PC
+		private void LDA_dx_2() => Address.Lower += X;                    // add X to the zero-page address
+		private void LDA_dx_3() => A = SetFlagsZN(Memory[Address.Lower]); // load A from address
 
 		// B9 LDA abs,y
 		private void LDA_ay_1() => Address.Lower = Memory[PC.Whole++];    // fetch low byte of address, inc. PC
@@ -1233,11 +1235,11 @@ namespace K6502Emu
 
 
 		// C1 CMP x,ind
-		private void CMP_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer address, inc. PC
-		private void CMP_xi_2() => Operand = (byte)(Memory[Operand] + X); // read from pointer and add X to it
-		private void CMP_xi_3() => Address.Lower = Memory[Operand];       // fetch effective address low
-		private void CMP_xi_4() => Address.Upper = Memory[Operand];       // fetch effective address high
-		private void CMP_xi_5() => DoCompare(A, Memory[Address.Whole]);   // read from effective address and compare with A
+		private void CMP_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
+		private void CMP_xi_2() => Operand += X;                        // add X to the pointer
+		private void CMP_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
+		private void CMP_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
+		private void CMP_xi_5() => DoCompare(A, Memory[Address.Whole]); // read from effective address and compare with A
 
 		// C5 CMP zpg
 		private void CMP_d_1() => Address.Lower = Memory[PC.Whole++];  // fetch zpg address
@@ -1275,9 +1277,9 @@ namespace K6502Emu
 		private void CMP_iy_5() => DoCompare(A, Memory[Address.Whole]); // add another cycle, read from effective address and compare with A
 
 		// D5 CMP zpg,x
-		private void CMP_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void CMP_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void CMP_dx_3() => DoCompare(A, Memory[Address.Lower]);               // read from address and compare with A
+		private void CMP_dx_1() => Address.Lower = Memory[PC.Whole++];  // fetch zero-page address for operand, inc. PC
+		private void CMP_dx_2() => Address.Lower += X;                  // add X to the zero-page address
+		private void CMP_dx_3() => DoCompare(A, Memory[Address.Lower]); // read from address and compare with A
 
 		// D9 CMP abs,y
 		private void CMP_ay_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1325,11 +1327,11 @@ namespace K6502Emu
 
 
 		// E1 SBC x,ind
-		private void SBC_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer address, inc. PC
-		private void SBC_xi_2() => Operand = (byte)(Memory[Operand] + X); // read from pointer and add X to it
-		private void SBC_xi_3() => Address.Lower = Memory[Operand];       // fetch effective address low
-		private void SBC_xi_4() => Address.Upper = Memory[Operand];       // fetch effective address high
-		private void SBC_xi_5() => DoSBC(Memory[Address.Whole]);          // read from effective address and perform subtraction
+		private void SBC_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
+		private void SBC_xi_2() => Operand += X;                        // add X to the pointer
+		private void SBC_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
+		private void SBC_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
+		private void SBC_xi_5() => DoSBC(Memory[Address.Whole]);        // read from effective address and perform subtraction
 
 		// E5 SBC zpg
 		private void SBC_d_1() => Address.Lower = Memory[PC.Whole++]; // fetch zpg address
@@ -1367,9 +1369,9 @@ namespace K6502Emu
 		private void SBC_iy_5() => DoSBC(Memory[Address.Whole]);    // add another cycle, read from effective address and perform subtraction
 
 		// F5 SBC zpg,x
-		private void SBC_dx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void SBC_dx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read operand from address and add X to it
-		private void SBC_dx_3() => DoSBC(Memory[Address.Lower]);                      // read from address and perform subtraction
+		private void SBC_dx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address for operand, inc. PC
+		private void SBC_dx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void SBC_dx_3() => DoSBC(Memory[Address.Lower]);       // read from address and perform subtraction
 
 		// F9 SBC abs,y
 		private void SBC_ay_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1456,15 +1458,15 @@ namespace K6502Emu
 		private void ASL_a_5() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 		// 16 ASL zpg,x
-		private void ASL_zx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void ASL_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read from addres, add X to it
-		private void ASL_zx_3() => Operand = Memory[Address.Lower];                   // read from effective address
+		private void ASL_zx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void ASL_zx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void ASL_zx_3() => Operand = Memory[Address.Lower];    // read from effective address
 		private void ASL_zx_4()
 		{
-			Memory[Address.Whole] = Operand;                                          // write same value back to effective address
-			Operand = DoASL(Operand);                                                 // perform ASL operation
+			Memory[Address.Whole] = Operand;                           // write same value back to effective address
+			Operand = DoASL(Operand);                                  // perform ASL operation
 		}
-		private void ASL_zx_5() => Memory[Address.Lower] = Operand;                   // write new value back to effective address
+		private void ASL_zx_5() => Memory[Address.Lower] = Operand;    // write new value back to effective address
 
 		// 1A, 3A, 5A, 7A, DA, EA, FA
 		// *NOP
@@ -1489,7 +1491,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = Operand;                           // write some value back to effective address
 			Operand = DoASL(Operand);                                  // perform ASL operation
 		}
-		private void ASL_ax_6() => Memory[Address.Lower] = Operand;    // write new value back to effective address
+		private void ASL_ax_6() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 
 		// 26 ROL zpg
@@ -1521,15 +1523,15 @@ namespace K6502Emu
 		private void ROL_a_5() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 		// 36 ROL zpg,x
-		private void ROL_zx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void ROL_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read from addres, add X to it
-		private void ROL_zx_3() => Operand = Memory[Address.Lower];                   // read from effective address
+		private void ROL_zx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void ROL_zx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void ROL_zx_3() => Operand = Memory[Address.Lower];    // read from effective address
 		private void ROL_zx_4()
 		{
-			Memory[Address.Whole] = Operand;                                          // write same value back to effective address
-			Operand = DoROL(Operand);                                                 // perform ROL operation
+			Memory[Address.Whole] = Operand;                           // write same value back to effective address
+			Operand = DoROL(Operand);                                  // perform ROL operation
 		}
-		private void ROL_zx_5() => Memory[Address.Lower] = Operand;                   // write new value back to effective address
+		private void ROL_zx_5() => Memory[Address.Lower] = Operand;    // write new value back to effective address
 
 		// 3E ROL abs,x
 		private void ROL_ax_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1550,7 +1552,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = Operand;                           // write some value back to effective address
 			Operand = DoROL(Operand);                                  // perform ROL operation
 		}
-		private void ROL_ax_6() => Memory[Address.Lower] = Operand;    // write new value back to effective address
+		private void ROL_ax_6() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 
 		// 46 LSR zpg
@@ -1582,15 +1584,15 @@ namespace K6502Emu
 		private void LSR_a_5() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 		// 56 LSR zpg,x
-		private void LSR_zx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void LSR_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read from addres, add X to it
-		private void LSR_zx_3() => Operand = Memory[Address.Lower];                   // read from effective address
+		private void LSR_zx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void LSR_zx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void LSR_zx_3() => Operand = Memory[Address.Lower];    // read from effective address
 		private void LSR_zx_4()
 		{
-			Memory[Address.Whole] = Operand;                                          // write same value back to effective address
-			Operand = DoLSR(Operand);                                                 // perform LSR operation
+			Memory[Address.Whole] = Operand;                           // write same value back to effective address
+			Operand = DoLSR(Operand);                                  // perform LSR operation
 		}
-		private void LSR_zx_5() => Memory[Address.Lower] = Operand;                   // write new value back to effective address
+		private void LSR_zx_5() => Memory[Address.Lower] = Operand;    // write new value back to effective address
 
 		// 5E LSR abs,x
 		private void LSR_ax_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1611,7 +1613,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = Operand;                           // write some value back to effective address
 			Operand = DoLSR(Operand);                                  // perform LSR operation
 		}
-		private void LSR_ax_6() => Memory[Address.Lower] = Operand;    // write new value back to effective address
+		private void LSR_ax_6() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 
 		// 66 ROR zpg
@@ -1643,15 +1645,15 @@ namespace K6502Emu
 		private void ROR_a_5() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 		// 76 ROR zpg,x
-		private void ROR_zx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void ROR_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read from addres, add X to it
-		private void ROR_zx_3() => Operand = Memory[Address.Lower];                   // read from effective address
+		private void ROR_zx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void ROR_zx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void ROR_zx_3() => Operand = Memory[Address.Lower];    // read from effective address
 		private void ROR_zx_4()
 		{
-			Memory[Address.Whole] = Operand;                                          // write same value back to effective address
-			Operand = DoROR(Operand);                                                 // perform ROR operation
+			Memory[Address.Whole] = Operand;                           // write same value back to effective address
+			Operand = DoROR(Operand);                                  // perform ROR operation
 		}
-		private void ROR_zx_5() => Memory[Address.Lower] = Operand;                   // write new value back to effective address
+		private void ROR_zx_5() => Memory[Address.Lower] = Operand;    // write new value back to effective address
 
 		// 7E ROR abs,x
 		private void ROR_ax_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1672,12 +1674,12 @@ namespace K6502Emu
 			Memory[Address.Whole] = Operand;                           // write some value back to effective address
 			Operand = DoROR(Operand);                                  // perform ROR operation
 		}
-		private void ROR_ax_6() => Memory[Address.Lower] = Operand;    // write new value back to effective address
+		private void ROR_ax_6() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 
 		// 86 STX zpg
 		private void STX_z_1() => Address.Lower = Memory[PC.Whole++]; // fetch zpg address
-		private void STX_z_2() => Memory[Address.Lower] = A;          // store X at zpg address
+		private void STX_z_2() => Memory[Address.Lower] = X;          // store X at zpg address
 
 		// 8A TXA
 		private void TXA() => A = SetFlagsZN(X); // transfer X to A
@@ -1688,9 +1690,9 @@ namespace K6502Emu
 		private void STX_a_3() => Memory[Address.Whole] = X;          // store X at address
 
 		// 96 STX zpg,Y
-		private void STX_zy_1() => Address.Lower = Memory[PC.Whole++];                // fetch address for operand, inc. PC
-		private void STX_zy_2() => Address.Lower = (byte)(Memory[Address.Lower] + Y); // read operand from address and add Y to it
-		private void STX_zy_3() => Memory[Address.Lower] = X;                         // store X at zpg address
+		private void STX_zy_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address for operand, inc. PC
+		private void STX_zy_2() => Address.Lower += Y;                 // add Y to zero-page address
+		private void STX_zy_3() => Memory[Address.Lower] = X;          // store X at zpg address
 
 
 		// 9A TXS
@@ -1729,9 +1731,9 @@ namespace K6502Emu
 		private void LDX_a_3() => X = SetFlagsZN(Memory[Address.Whole]); // load X from effective address
 
 		// B6 LDX zpg,Y
-		private void LDX_zy_1() => Operand = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void LDX_zy_2() => Address.Lower = (byte)(Memory[Operand] + Y); // read from address and add Y to it
-		private void LDX_zy_3() => X = SetFlagsZN(Memory[Address.Lower]);       // load X from effective address
+		private void LDX_zy_1() => Address.Lower = Memory[PC.Whole++];    // fetch zero-page address, inc. PC
+		private void LDX_zy_2() => Address.Lower += Y;                    // add Y to the zero-page address
+		private void LDX_zy_3() => X = SetFlagsZN(Memory[Address.Lower]); // load X from effective address
 
 		// BA TSX
 		private void TSX() => X = SetFlagsZN(S); // transfer S to X
@@ -1779,15 +1781,15 @@ namespace K6502Emu
 		private void DEC_a_5() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 		// D6 DEC zpg,X
-		private void DEC_zx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void DEC_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read from addres, add X to it
-		private void DEC_zx_3() => Operand = Memory[Address.Lower];                   // read from effective address
+		private void DEC_zx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void DEC_zx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void DEC_zx_3() => Operand = Memory[Address.Lower];    // read from effective address
 		private void DEC_zx_4()
 		{
-			Memory[Address.Whole] = Operand;                                          // write same value back to effective address
-			SetFlagsZN(--Operand);                                                    // decrement
+			Memory[Address.Whole] = Operand;                           // write same value back to effective address
+			SetFlagsZN(--Operand);                                     // decrement
 		}
-		private void DEC_zx_5() => Memory[Address.Lower] = Operand;                   // write new value back to effective address
+		private void DEC_zx_5() => Memory[Address.Lower] = Operand;    // write new value back to effective address
 
 		// DE DEC abs,X
 		private void DEC_ax_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1808,7 +1810,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = Operand;                           // write some value back to effective address
 			SetFlagsZN(--Operand);                                     // perform ROR operation
 		}
-		private void DEC_ax_6() => Memory[Address.Lower] = Operand;    // write new value back to effective address
+		private void DEC_ax_6() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 
 		// C6 INC zpg
@@ -1833,15 +1835,15 @@ namespace K6502Emu
 		private void INC_a_5() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 		// D6 INC zpg,X
-		private void INC_zx_1() => Address.Lower = Memory[PC.Whole++];                // fetch address, inc. PC
-		private void INC_zx_2() => Address.Lower = (byte)(Memory[Address.Lower] + X); // read from addres, add X to it
-		private void INC_zx_3() => Operand = Memory[Address.Lower];                   // read from effective address
+		private void INC_zx_1() => Address.Lower = Memory[PC.Whole++]; // fetch zero-page address, inc. PC
+		private void INC_zx_2() => Address.Lower += X;                 // add X to the zero-page address
+		private void INC_zx_3() => Operand = Memory[Address.Lower];    // read from effective address
 		private void INC_zx_4()
 		{
-			Memory[Address.Whole] = Operand;                                          // write same value back to effective address
-			SetFlagsZN(++Operand);                                                    // Increment
+			Memory[Address.Whole] = Operand;                           // write same value back to effective address
+			SetFlagsZN(++Operand);                                     // Increment
 		}
-		private void INC_zx_5() => Memory[Address.Lower] = Operand;                   // write new value back to effective address
+		private void INC_zx_5() => Memory[Address.Lower] = Operand;    // write new value back to effective address
 
 		// DE INC abs,X
 		private void INC_ax_1() => Address.Lower = Memory[PC.Whole++]; // fetch low byte of address, inc. PC
@@ -1862,7 +1864,7 @@ namespace K6502Emu
 			Memory[Address.Whole] = Operand;                           // write some value back to effective address
 			SetFlagsZN(++Operand);                                     // perform ROR operation
 		}
-		private void INC_ax_6() => Memory[Address.Lower] = Operand;    // write new value back to effective address
+		private void INC_ax_6() => Memory[Address.Whole] = Operand;    // write new value back to effective address
 
 
 
@@ -1950,7 +1952,7 @@ namespace K6502Emu
 		private void NMI_2() => Memory[0x0100 + S--] = PC.Upper;                     // push PC upper on stack
 		private void NMI_3() => Memory[0x0100 + S--] = PC.Lower;                     // push PC lower on stack
 		private void NMI_4() => Memory[0x0100 + S--] = (byte)(P.Byte & 0b1110_1111); // push P on stack with B clear
-		private void NMI_5() => PC.Lower = Memory[0xfa];                             // fetch NMI interrupt vector lower
+		private void NMI_5() { PC.Lower = Memory[0xfa]; P.Interrupt = true; }        // fetch NMI interrupt vector lower
 		private void NMI_6() => PC.Upper = Memory[0xfb];                             // fetch NMI interrupt vector upper
 	}
 }
