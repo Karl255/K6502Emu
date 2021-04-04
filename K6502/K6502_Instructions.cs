@@ -9,6 +9,7 @@
  */
 
 // TODO: use consistent addressing mode names (eg. some zero-page instructions are marked with z and some with d)
+// NOTE: some indexing addressing modes weren't implemented completely correctly, refer to 6502_cpu.txt; TODO: eventually fix this
 
 using System;
 using System.Diagnostics;
@@ -312,7 +313,7 @@ namespace K6502Emu
 		}
 		private void BPL_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -394,7 +395,7 @@ namespace K6502Emu
 		}
 		private void BMI_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -435,7 +436,7 @@ namespace K6502Emu
 		}
 		private void BVC_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -481,7 +482,7 @@ namespace K6502Emu
 		}
 		private void BVS_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -522,7 +523,7 @@ namespace K6502Emu
 		}
 		private void BCC_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -583,7 +584,7 @@ namespace K6502Emu
 		}
 		private void BCS_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -645,7 +646,7 @@ namespace K6502Emu
 		}
 		private void BNE_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page
@@ -685,7 +686,7 @@ namespace K6502Emu
 		}
 		private void BEQ_3()
 		{
-			if (PC.Lower - Operand > 0)   // do the reverse to see which way the page got crossed
+			if (PC.Lower - Operand >= 0)   // do the reverse to see which way the page got crossed
 				PC.Upper--;               // move down 1 page
 			else
 				PC.Upper++;               // move up 1 page

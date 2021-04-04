@@ -7,22 +7,25 @@ namespace K6502CLI
 	class Bootstrapper
 	{
 		// source: https://github.com/Klaus2m5/6502_65C02_functional_tests
-		private static readonly string BinaryPath = "6502_functional_test.bin";
+		//private static readonly string BinaryPath = "6502_functional_test.bin";
+		// "Ruud Baltissen's 8k test ROM" from http://www.6502.org/tools/emu/
+		private static readonly string BinaryPath = "ttl6502.bin";
 		//private static readonly string BinaryPath = "rom.bin";
-		private static readonly int SkipToAddress = 0x28ad;
+		private static readonly int SkipToAddress = 0xf5d5;
+		private static readonly bool DoSkip = true;
 
 		private static K6502Emu.Memory<byte> Memory;
 		private static K6502 Cpu;
 		private static byte Page;
 
-		private static ConsoleColor FgColorStatic = ConsoleColor.Blue;
-		private static ConsoleColor FgColorDynamic = ConsoleColor.Gray;
-		private static ConsoleColor AccentColor = ConsoleColor.Red;
+		private static readonly ConsoleColor FgColorStatic = ConsoleColor.Blue;
+		private static readonly ConsoleColor FgColorDynamic = ConsoleColor.Gray;
+		private static readonly ConsoleColor AccentColor = ConsoleColor.Red;
 
 		static void Main()
 		{
 			InitUI();
-			InitSystem(true);
+			InitSystem(DoSkip);
 
 			while (true)
 			{
@@ -43,7 +46,7 @@ namespace K6502CLI
 						break;
 
 					case ConsoleKey.R:
-						InitSystem(true);
+						InitSystem(DoSkip);
 						break;
 
 					case ConsoleKey.N: // do 10 ticks
@@ -62,12 +65,12 @@ namespace K6502CLI
 			}
 		}
 
-		private static void InitSystem(bool skipTo = false)
+		private static void InitSystem(bool doSkip = false)
 		{
 			Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
 			Cpu = new K6502(Memory);
 
-			if (skipTo)
+			if (doSkip)
 				while (Cpu.GetPC != SkipToAddress)
 					Cpu.Tick();
 		}

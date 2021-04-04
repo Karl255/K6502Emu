@@ -112,6 +112,8 @@ namespace K6502Emu
 			P.Negative = reg - val < 0;
 		}
 
+		// NOTE: this hasn't been tested too extensively
+		// TODO: properly implement and extensively test BCD mode (ADC and SBC)
 		private void DoADC(byte val)
 		{
 			byte carry = (byte)(P.Carry ? 1 : 0);
@@ -124,8 +126,7 @@ namespace K6502Emu
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
 				 * "Decimal mode in NMOS 6500 series" section (it's a .txt so use ctrl + f to locate it).
 				 * Althogh large modifications have been made, not only because C code isn't always valid C# code,
-				 * but also because it had some issues (the zero flag setting using != instead of ==)
-				 * or I knew of a better way of doing it.
+				 * but also because it had some issues or I knew of a better way of doing it.
 				 * Another useful resource for decimal mode implementation is
 				 * http://www.6502.org/tutorials/decimal_mode.html#A
 				 * 
@@ -139,7 +140,7 @@ namespace K6502Emu
 				int high = (A >> 4) + (val >> 4) + (low > 0x09 ? 1 : 0);
 
 				// the zero flag is set exactly like in decimal mode
-				P.Zero = ((A + val + carry) & 0xff) == 0;
+				P.Zero = ((A + val + carry) & 0xff) != 0;
 
 				// BCD fixup for lower nibble
 				if (low > 9)
