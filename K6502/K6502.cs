@@ -103,18 +103,17 @@ namespace K6502Emu
 			P.Zero = val == 0;
 			// bit 7 can be seen as sign in 2's complement numbers
 			// since the type is unsigned byte, it's fastest to check if it's over 128 (rather than isolating the bit)
-			P.Negative = val >= 128;
+			P.Negative = (val & 0x80) != 0;
 			return val;
 		}
 
 		private void DoCompare(byte reg, byte val)
 		{
 			P.Carry = reg >= val;
-			P.Zero = reg == val;
-			P.Negative = reg - val < 0;
+			SetFlagsZN((byte)(reg - val));
 		}
 
-		// NOTE: this hasn't been tested too extensively
+		// NOTE: BCD mode hasn't been tested too extensively
 		// TODO: properly implement and extensively test BCD mode (ADC and SBC)
 		private void DoADC(byte val)
 		{
@@ -122,7 +121,7 @@ namespace K6502Emu
 
 			if (DecimalModeEnabled && P.Decimal)
 			{
-				// decimal/BCD mode (for 6510)
+				// decimal/BCD mode
 
 				/*
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
@@ -142,7 +141,7 @@ namespace K6502Emu
 				int high = (A >> 4) + (val >> 4) + (low > 0x09 ? 1 : 0);
 
 				// the zero flag is set exactly like in decimal mode
-				P.Zero = ((A + val + carry) & 0xff) != 0;
+				P.Zero = ((A + val + carry) & 0xff) == 0;
 
 				// BCD fixup for lower nibble
 				if (low > 9)
@@ -162,11 +161,12 @@ namespace K6502Emu
 			else
 			{
 				// binary mode
-				int uT = A + val + carry; // sum them all as ints (so the result isn't limited to the byte range)
-				int sT = (sbyte)A + (sbyte)val + (sbyte)carry; // cast all to sbyte, then sum them as ints
-				P.Carry = uT > 255 || uT < 0; // if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
-				A = SetFlagsZN((byte)(uT & 0xff)); // lowest 8 bits go into A and set flags Zero and Negative
+
+				uint unsignedSum = (uint)A + val + carry;             // sum them all as unsigned ints (so the result isn't limited to the byte range)
+				int signedSum = (sbyte)A + (sbyte)val + (sbyte)carry; // cast all to sbyte, then sum them as ints
+				P.Carry = unsignedSum > 255;                          // if unisgned overflow
+				P.Overflow = signedSum > 127 || signedSum < -128;     // if signed over/underflow
+				A = SetFlagsZN((byte)(unsignedSum & 0xff));           // lowest 8 bits go into A, set flags Zero and Negative flags
 			}
 		}
 
@@ -176,7 +176,7 @@ namespace K6502Emu
 
 			if (DecimalModeEnabled && P.Decimal)
 			{
-				// decimal mode
+				// decimal/BCD mode
 
 				/*
 				 * This code was taken from http://nesdev.com/6502_cpu.txt from the
@@ -212,7 +212,8 @@ namespace K6502Emu
 			}
 			else
 			{
-				// binary/BCD mode
+				// binary
+
 				int uT = A - val - borrow; // sum them all as ints (so the result isn't limited to the byte range)
 				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
 				P.Carry = !(uT > 255 || uT < 0); // if unisgned over/underflow

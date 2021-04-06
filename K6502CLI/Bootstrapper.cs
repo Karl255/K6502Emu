@@ -1,18 +1,24 @@
-﻿using K6502Emu;
-using System;
+﻿using System;
 using System.IO;
+using System.Text;
+using K6502Emu;
 
 namespace K6502CLI
 {
-	class Bootstrapper
+	internal class Bootstrapper
 	{
 		// source: https://github.com/Klaus2m5/6502_65C02_functional_tests
 		//private static readonly string BinaryPath = "6502_functional_test.bin";
+
 		// "Ruud Baltissen's 8k test ROM" from http://www.6502.org/tools/emu/
-		private static readonly string BinaryPath = "ttl6502.bin";
+		//private static readonly string BinaryPath = "ttl6502.bin";
+
+		private static readonly string BinaryPath = "03-immediate.bin";
+
 		//private static readonly string BinaryPath = "rom.bin";
-		private static readonly int SkipToAddress = 0xf5d5;
-		private static readonly bool DoSkip = true;
+
+		private static readonly int SkipToAddress = 0x0600;
+		private static readonly bool DoSkip = false;
 
 		private static K6502Emu.Memory<byte> Memory;
 		private static K6502 Cpu;
@@ -22,7 +28,7 @@ namespace K6502CLI
 		private static readonly ConsoleColor FgColorDynamic = ConsoleColor.Gray;
 		private static readonly ConsoleColor AccentColor = ConsoleColor.Red;
 
-		static void Main()
+		private static void Main()
 		{
 			InitUI();
 			InitSystem(DoSkip);
@@ -33,10 +39,6 @@ namespace K6502CLI
 
 				switch (Console.ReadKey(true).Key)
 				{
-					case ConsoleKey.Spacebar:
-						Cpu.Tick();
-						break;
-
 					case ConsoleKey.LeftArrow:
 						Page--;
 						break;
@@ -46,17 +48,60 @@ namespace K6502CLI
 						break;
 
 					case ConsoleKey.R:
+						Console.Clear();
+						InitUI();
 						InitSystem(DoSkip);
 						break;
 
-					case ConsoleKey.N: // do 10 ticks
+					// do 10^0 ticks
+					case ConsoleKey.Spacebar:
+						Cpu.Tick();
+						break;
+
+					// do 10^1 ticks
+					case ConsoleKey.D1:
 						for (int i = 0; i < 10; i++)
 							Cpu.Tick();
 						break;
 
-					case ConsoleKey.M: // do 100 ticks
+					// do 10^2 ticks
+					case ConsoleKey.D2:
 						for (int i = 0; i < 100; i++)
 							Cpu.Tick();
+						break;
+
+					// do 10^3 ticks
+					case ConsoleKey.D3:
+						for (int i = 0; i < 1000; i++)
+							Cpu.Tick();
+						break;
+						
+					// do 10^4 ticks
+					case ConsoleKey.D4:
+						for (int i = 0; i < 10000; i++)
+							Cpu.Tick();
+						break;
+						
+					// do 10^5 ticks
+					case ConsoleKey.D5:
+						for (int i = 0; i < 100000; i++)
+							Cpu.Tick();
+						break;
+
+					// prints the report string at 0x6004 (for a test suite)
+					case ConsoleKey.P:
+						int index = 0x6004;
+						StringBuilder builder = new();
+
+						while (Memory[index] != 0)
+						{
+							builder.Append((char)Memory[index]);
+							index++;
+						}
+
+						Console.SetCursorPosition(0, 18);
+						Console.Write(builder.ToString());
+
 						break;
 
 					default:
@@ -182,15 +227,16 @@ namespace K6502CLI
 
 		private static string FormatStatus(byte status)
 		{
-			string r = "";
+			status |= 0b0010_0000;
+			StringBuilder builder = new(8);
 
 			for (int i = 0; i < 8; i++)
 			{
-				r += i == 2 ? '-' : (status & 0x80) != 0 ? '1' : '0';
+				builder.Append((status & 0x80) != 0 ? '1' : '0');
 				status <<= 1;
 			}
 
-			return r;
+			return builder.ToString();
 		}
 	}
 }
