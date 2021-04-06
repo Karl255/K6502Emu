@@ -18,7 +18,8 @@ namespace K6502Emu
 		protected StatusRegister P = new StatusRegister(0b0011_0100); // status register: N V - B D I Z C
 		protected byte S = 0xFD; // stack pointer
 
-		// properties for getting the internal state from outside
+		// properties for getting the internal state from outside, useful for debugging and getting insight about the execution
+		// TODO: give better names to these
 		public byte GetA => A;
 		public byte GetX => X;
 		public byte GetY => Y;
@@ -27,6 +28,7 @@ namespace K6502Emu
 		public ushort GetPC => PC.Whole;
 		public int GetCycle => OpCodeCycle;
 		public ushort GetOpCode => OpCode;
+		public IAddressable<byte> GetMemory => Memory;
 
 		protected Action[][] Instructions = new Action[258][];
 		protected IAddressable<byte> Memory;
