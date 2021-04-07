@@ -703,11 +703,11 @@ namespace K6502Emu
 		/* ALU operations */
 
 		// 01 ORA x,ind
-		private void ORA_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer, inc. PC
-		private void ORA_xi_2() { _ = Memory[Operand]; Operand += X; }     // read from pointer (throw away), add X
-		private void ORA_xi_3() => Address.Lower = Memory[Operand];        // fetch effective address low
-		private void ORA_xi_4() => Address.Upper = Memory[Operand + 1];    // fetch effective address high
-		private void ORA_xi_5() => SetFlagsZN(A |= Memory[Address.Whole]); // read from effective address and OR with A
+		private void ORA_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void ORA_xi_2() { _ = Memory[Operand]; Operand += X; }           // read from pointer (throw away), add X
+		private void ORA_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void ORA_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void ORA_xi_5() => SetFlagsZN(A |= Memory[Address.Whole]);       // read from effective address and OR with A
 
 		// 05 ORA zpg
 		private void ORA_d_1() => Address.Lower = Memory[PC.Whole++];     // fetch zpg address
@@ -726,7 +726,7 @@ namespace K6502Emu
 		private void ORA_iy_2() => Address.Lower = Memory[Operand];        // fetch effective address lower
 		private void ORA_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                           // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];                  // fetch effective address upper
 			Address.Lower += Y;                                            // add Y to address lower
 		}
 		private void ORA_iy_4()
@@ -797,11 +797,11 @@ namespace K6502Emu
 		// NOTE: the following code (until the RMW instructions) was automatically generated
 
 		// 21 AND x,ind
-		private void AND_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer, inc. PC
-		private void AND_xi_2() { _ = Memory[Operand]; Operand += X; }     // add X to the pointer
-		private void AND_xi_3() => Address.Lower = Memory[Operand];        // fetch effective address low
-		private void AND_xi_4() => Address.Upper = Memory[Operand + 1];    // fetch effective address high
-		private void AND_xi_5() => SetFlagsZN(A &= Memory[Address.Whole]); // read from effective address and AND with A
+		private void AND_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void AND_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void AND_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void AND_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void AND_xi_5() => SetFlagsZN(A &= Memory[Address.Whole]);       // read from effective address and AND with A
 
 		// 25 AND zpg
 		private void AND_d_1() => Address.Lower = Memory[PC.Whole++];     // fetch zpg address
@@ -820,7 +820,7 @@ namespace K6502Emu
 		private void AND_iy_2() => Address.Lower = Memory[Operand];        // fetch effective address lower
 		private void AND_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                           // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];                  // fetch effective address upper
 			Address.Lower += Y;                                            // add Y to address lower
 		}
 		private void AND_iy_4()
@@ -889,11 +889,11 @@ namespace K6502Emu
 
 
 		// 41 EOR x,ind
-		private void EOR_xi_1() => Operand = Memory[PC.Whole++];           // fetch pointer, inc. PC
-		private void EOR_xi_2() { _ = Memory[Operand]; Operand += X; }     // add X to the pointer
-		private void EOR_xi_3() => Address.Lower = Memory[Operand];        // fetch effective address low
-		private void EOR_xi_4() => Address.Upper = Memory[Operand + 1];    // fetch effective address high
-		private void EOR_xi_5() => SetFlagsZN(A ^= Memory[Address.Whole]); // read from effective address and XOR with A
+		private void EOR_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void EOR_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void EOR_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void EOR_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void EOR_xi_5() => SetFlagsZN(A ^= Memory[Address.Whole]);       // read from effective address and XOR with A
 
 		// 45 EOR zpg
 		private void EOR_d_1() => Address.Lower = Memory[PC.Whole++];     // fetch zpg address
@@ -912,7 +912,7 @@ namespace K6502Emu
 		private void EOR_iy_2() => Address.Lower = Memory[Operand];        // fetch effective address lower
 		private void EOR_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                           // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];                  // fetch effective address upper
 			Address.Lower += Y;                                            // add Y to address lower
 		}
 		private void EOR_iy_4()
@@ -981,11 +981,11 @@ namespace K6502Emu
 
 
 		// 61 ADC x,ind
-		private void ADC_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
-		private void ADC_xi_2() { _ = Memory[Operand]; Operand += X; }  // add X to the pointer
-		private void ADC_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
-		private void ADC_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
-		private void ADC_xi_5() => DoADC(Memory[Address.Whole]);        // read from effective address and perform addition
+		private void ADC_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void ADC_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void ADC_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void ADC_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void ADC_xi_5() => DoADC(Memory[Address.Whole]);                 // read from effective address and perform addition
 
 		// 65 ADC zpg
 		private void ADC_d_1() => Address.Lower = Memory[PC.Whole++];   // fetch zpg address
@@ -1004,7 +1004,7 @@ namespace K6502Emu
 		private void ADC_iy_2() => Address.Lower = Memory[Operand]; // fetch effective address lower
 		private void ADC_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                    // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];           // fetch effective address upper
 			Address.Lower += Y;                                     // add Y to address lower
 		}
 		private void ADC_iy_4()
@@ -1073,11 +1073,11 @@ namespace K6502Emu
 
 
 		// 81 STA x,ind
-		private void STA_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
-		private void STA_xi_2() { _ = Memory[Operand]; Operand += X; }  // add X to the pointer
-		private void STA_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
-		private void STA_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
-		private void STA_xi_5() => Memory[Address.Whole] = A;           // store A at effective address
+		private void STA_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void STA_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void STA_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void STA_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void STA_xi_5() => Memory[Address.Whole] = A;                    // store A at effective address
 
 		// 85 STA zpg
 		private void STA_d_1() => Address.Lower = Memory[PC.Whole++]; // fetch zpg address
@@ -1098,7 +1098,7 @@ namespace K6502Emu
 		private void STA_iy_2() => Address.Lower = Memory[Operand]; // fetch effective address lower
 		private void STA_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                    // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];           // fetch effective address upper
 			Address.Lower += Y;                                     // add Y to address lower
 		}
 		private void STA_iy_4()
@@ -1148,11 +1148,11 @@ namespace K6502Emu
 
 
 		// A1 LDA x,ind
-		private void LDA_xi_1() => Operand = Memory[PC.Whole++];          // fetch pointer, inc. PC
-		private void LDA_xi_2() { _ = Memory[Operand]; Operand += X; }    // add X to the pointer
-		private void LDA_xi_3() => Address.Lower = Memory[Operand];       // fetch effective address low
-		private void LDA_xi_4() => Address.Upper = Memory[Operand + 1];   // fetch effective address high
-		private void LDA_xi_5() => A = SetFlagsZN(Memory[Address.Whole]); // load A from effective address
+		private void LDA_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void LDA_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void LDA_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void LDA_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void LDA_xi_5() => A = SetFlagsZN(Memory[Address.Whole]);        // load A from effective address
 
 		// A5 LDA zpg
 		private void LDA_d_1() => Address.Lower = Memory[PC.Whole++];    // fetch zpg address
@@ -1171,7 +1171,7 @@ namespace K6502Emu
 		private void LDA_iy_2() => Address.Lower = Memory[Operand];       // fetch effective address lower
 		private void LDA_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                          // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];                 // fetch effective address upper
 			Address.Lower += Y;                                           // add Y to address lower
 		}
 		private void LDA_iy_4()
@@ -1240,11 +1240,11 @@ namespace K6502Emu
 
 
 		// C1 CMP x,ind
-		private void CMP_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
-		private void CMP_xi_2() { _ = Memory[Operand]; Operand += X; }  // add X to the pointer
-		private void CMP_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
-		private void CMP_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
-		private void CMP_xi_5() => DoCompare(A, Memory[Address.Whole]); // read from effective address and compare with A
+		private void CMP_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void CMP_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void CMP_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void CMP_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void CMP_xi_5() => DoCompare(A, Memory[Address.Whole]);          // read from effective address and compare with A
 
 		// C5 CMP zpg
 		private void CMP_d_1() => Address.Lower = Memory[PC.Whole++];  // fetch zpg address
@@ -1263,7 +1263,7 @@ namespace K6502Emu
 		private void CMP_iy_2() => Address.Lower = Memory[Operand]; // fetch effective address lower
 		private void CMP_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                    // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];           // fetch effective address upper
 			Address.Lower += Y;                                     // add Y to address lower
 		}
 		private void CMP_iy_4()
@@ -1332,11 +1332,11 @@ namespace K6502Emu
 
 
 		// E1 SBC x,ind
-		private void SBC_xi_1() => Operand = Memory[PC.Whole++];        // fetch pointer, inc. PC
-		private void SBC_xi_2() { _ = Memory[Operand]; Operand += X; }  // add X to the pointer
-		private void SBC_xi_3() => Address.Lower = Memory[Operand];     // fetch effective address low
-		private void SBC_xi_4() => Address.Upper = Memory[Operand + 1]; // fetch effective address high
-		private void SBC_xi_5() => DoSBC(Memory[Address.Whole]);        // read from effective address and perform subtraction
+		private void SBC_xi_1() => Operand = Memory[PC.Whole++];                 // fetch pointer, inc. PC
+		private void SBC_xi_2() { _ = Memory[Operand]; Operand += X; }           // add X to the pointer
+		private void SBC_xi_3() => Address.Lower = Memory[Operand];              // fetch effective address low
+		private void SBC_xi_4() => Address.Upper = Memory[(Operand + 1) & 0xff]; // fetch effective address high
+		private void SBC_xi_5() => DoSBC(Memory[Address.Whole]);                 // read from effective address and perform subtraction
 
 		// E5 SBC zpg
 		private void SBC_d_1() => Address.Lower = Memory[PC.Whole++]; // fetch zpg address
@@ -1355,7 +1355,7 @@ namespace K6502Emu
 		private void SBC_iy_2() => Address.Lower = Memory[Operand]; // fetch effective address lower
 		private void SBC_iy_3()
 		{
-			Address.Upper = Memory[Operand + 1];                    // fetch effective address upper
+			Address.Upper = Memory[(Operand + 1) & 0xff];           // fetch effective address upper
 			Address.Lower += Y;                                     // add Y to address lower
 		}
 		private void SBC_iy_4()

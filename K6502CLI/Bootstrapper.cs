@@ -23,8 +23,8 @@ namespace K6502CLI
 		//private static readonly string BinaryPath = "05-zp_xy.bin";     // ADC, SBC (zx, zy) fail
 		//private static readonly string BinaryPath = "06-absolute.bin";  // ADC, SBC fail
 		//private static readonly string BinaryPath = "07-abs_xy.bin";    // ADC, SBC (ax, ay) fail
-		//private static readonly string BinaryPath = "08-ind_x.bin";     // LDA, STA, CMP, ADC, SBC, ORA, AND, EOR fail
-		//private static readonly string BinaryPath = "09-ind_y.bin";     // LDA, STA, CMP, ADC, SBC, ORA, AND, EOR fail
+		//private static readonly string BinaryPath = "08-ind_x.bin";     // ADC, SBC fail
+		//private static readonly string BinaryPath = "09-ind_y.bin";     // ADC, SBC fail
 		//private static readonly string BinaryPath = "10-branches.bin";  // pass
 		//private static readonly string BinaryPath = "11-stack.bin";     // pass
 		//private static readonly string BinaryPath = "12-jmp_jsr.bin";   // pass
