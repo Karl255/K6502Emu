@@ -37,10 +37,15 @@ namespace K6502Emu
 		private int OpCodeCycle = 1;
 		private ushort OpCode = 0x4C; // JMP abs at cycle 1
 		protected bool instructionEnded = false;
-		private bool IRQLevelDetector = false;
-		private bool IRQSignal = false;
-		private bool NMIEdgeDetector = false;
-		private bool NMISignal = false;
+
+		public bool IrqInput { get; set; } = false;
+		private bool IrqFlag = false;
+		private bool NmiInput = false;
+		private bool NmiFlag = false;
+
+		public void SetIrq() => IrqInput = true;
+		public void ClearIrq() => IrqInput = false;
+		public void SetNmi() => NmiInput = true;
 
 		// configuration fields
 		private readonly bool DecimalModeEnabled;
@@ -69,9 +74,12 @@ namespace K6502Emu
 				&& ((t == 2 && OpCodeCycle == 1)     // for 2 cycle instructions, poll after 1st cycle
 				|| (t > 2 && OpCodeCycle == t - 1))) // for >2 cycle instructions, poll on last cycle
 			{
-				IRQSignal = IRQLevelDetector;
-				if (NMIEdgeDetector)
-					NMISignal = true;
+				IrqFlag = IrqInput;
+				if (NmiInput)
+				{
+					NmiInput = false;
+					NmiFlag = true;
+				}
 			}
 
 			/*
@@ -88,11 +96,6 @@ namespace K6502Emu
 			else
 				OpCodeCycle++;
 		}
-
-		public void SetIRQ() => IRQLevelDetector = true;
-		public void ClearIRQ() => IRQLevelDetector = false;
-
-		public void SetNMI() => NMIEdgeDetector = true;
 
 		protected void EndInstruction() => instructionEnded = true;
 

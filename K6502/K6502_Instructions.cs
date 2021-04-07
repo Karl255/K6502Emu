@@ -259,15 +259,17 @@ namespace K6502Emu
 			 *       http://wiki.nesdev.com/w/index.php/CPU_interrupts#IRQ_and_NMI_tick-by-tick_execution
 			 *       Also, interrupts would suppress PC increments in the BRK instruction
 			 */
-			if (NMISignal)
+			if (NmiFlag)
 			{
 				_ = Memory[PC.Whole]; // fetch opcode and discard
 				OpCode = 257;
+				NmiFlag = false;
 			}
-			else if (IRQSignal && !P.Interrupt)
+			else if (IrqFlag && !P.Interrupt)
 			{
 				_ = Memory[PC.Whole]; // fetch opcode and discard
 				OpCode = 256;
+				IrqFlag = false;
 			}
 			else
 				OpCode = Memory[PC.Whole++]; // fetch opcode, inc. PC
