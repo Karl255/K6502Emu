@@ -140,7 +140,7 @@ namespace K6502Emu
 				// upper nibble
 				int high = (A >> 4) + (val >> 4) + (low > 0x09 ? 1 : 0);
 
-				// the zero flag is set exactly like in decimal mode
+				// the zero flag is set exactly like in binary mode
 				P.Zero = ((A + val + carry) & 0xff) == 0;
 
 				// BCD fixup for lower nibble
@@ -214,11 +214,11 @@ namespace K6502Emu
 			{
 				// binary
 
-				int uT = A - val - borrow; // sum them all as ints (so the result isn't limited to the byte range)
-				int sT = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
-				P.Carry = !(uT > 255 || uT < 0); // if unisgned over/underflow
-				P.Overflow = sT > 127 || sT < -128; // if signed over/underflow
-				A = SetFlagsZN((byte)(uT & 0xff)); // lowest 8 bits go into A and set flags Zero and Negative
+				uint unsignedSub = (uint)A - val - borrow;             // sum them all as ints (so the result isn't limited to the byte range)
+				int signedSub = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
+				P.Carry = !(unsignedSub < 0);                          // if unisgned underflow (borrow = !carry)
+				P.Overflow = signedSub > 127 || signedSub < -128;      // if signed over/underflow
+				A = SetFlagsZN((byte)(unsignedSub & 0xff));            // lowest 8 bits go into A and set flags Zero and Negative
 			}
 		}
 

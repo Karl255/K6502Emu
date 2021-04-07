@@ -13,7 +13,25 @@ namespace K6502CLI
 		// "Ruud Baltissen's 8k test ROM" from http://www.6502.org/tools/emu/
 		//private static readonly string BinaryPath = "ttl6502.bin";
 
-		private static readonly string BinaryPath = "03-immediate.bin";
+		// source: instr_test_v5 by blargg, http://wiki.nesdev.com/w/index.php/Emulator_tests
+		// NOTE 1: functionality of unofficial instructions is ignored
+		// NOTE 2: the code is extracted from the .nes file and put into a 64k binary (placed at last 32k)
+		//private static readonly string BinaryPath = "01-basics.bin";    // pass
+		//private static readonly string BinaryPath = "02-implied.bin";   // pass
+		//private static readonly string BinaryPath = "03-immediate.bin"; // ADC, SBC fail
+		//private static readonly string BinaryPath = "04-zero_page.bin"; // ADC, SBC fail
+		//private static readonly string BinaryPath = "05-zp_xy.bin";     // ADC, SBC (zx, zy) fail
+		//private static readonly string BinaryPath = "06-absolute.bin";  // ADC, SBC fail
+		//private static readonly string BinaryPath = "07-abs_xy.bin";    // ADC, SBC (ax, ay) fail
+		private static readonly string BinaryPath = "08-ind_x.bin";     // LDA, STA, CMP, ADC, SBC, ORA, AND, EOR fail
+		//private static readonly string BinaryPath = "09-ind_y.bin";     // LDA, STA, CMP, ADC, SBC, ORA, AND, EOR fail
+		//private static readonly string BinaryPath = "10-branches.bin";  // pass
+		//private static readonly string BinaryPath = "11-stack.bin";     // pass
+		//private static readonly string BinaryPath = "12-jmp_jsr.bin";   // pass
+		//private static readonly string BinaryPath = "13-rts.bin";       // pass
+		//private static readonly string BinaryPath = "14-rti.bin";       // pass
+		//private static readonly string BinaryPath = "15-brk.bin";       // pass
+		//private static readonly string BinaryPath = "16-special.bin";   // JMP ($6FF) should get high byte from $600
 
 		//private static readonly string BinaryPath = "rom.bin";
 
