@@ -8,7 +8,7 @@ namespace K6502CLI
 	internal class Bootstrapper
 	{
 		// source: https://github.com/Klaus2m5/6502_65C02_functional_tests
-		//private static readonly string BinaryPath = "6502_functional_test.bin";
+		private static readonly string BinaryPath = "6502_functional_test.bin";
 
 		// "Ruud Baltissen's 8k test ROM" from http://www.6502.org/tools/emu/
 		//private static readonly string BinaryPath = "ttl6502.bin";
@@ -18,13 +18,13 @@ namespace K6502CLI
 		// NOTE 2: the code is extracted from the .nes file and put into a 64k binary (placed at last 32k)
 		//private static readonly string BinaryPath = "01-basics.bin";    // pass
 		//private static readonly string BinaryPath = "02-implied.bin";   // pass
-		//private static readonly string BinaryPath = "03-immediate.bin"; // ADC, SBC fail
-		//private static readonly string BinaryPath = "04-zero_page.bin"; // ADC, SBC fail
-		//private static readonly string BinaryPath = "05-zp_xy.bin";     // ADC, SBC (zx, zy) fail
-		//private static readonly string BinaryPath = "06-absolute.bin";  // ADC, SBC fail
-		//private static readonly string BinaryPath = "07-abs_xy.bin";    // ADC, SBC (ax, ay) fail
-		//private static readonly string BinaryPath = "08-ind_x.bin";     // ADC, SBC fail
-		//private static readonly string BinaryPath = "09-ind_y.bin";     // ADC, SBC fail
+		//private static readonly string BinaryPath = "03-immediate.bin"; // pass
+		//private static readonly string BinaryPath = "04-zero_page.bin"; // pass
+		//private static readonly string BinaryPath = "05-zp_xy.bin";     // pass
+		//private static readonly string BinaryPath = "06-absolute.bin";  // pass
+		//private static readonly string BinaryPath = "07-abs_xy.bin";    // pass
+		//private static readonly string BinaryPath = "08-ind_x.bin";     // pass
+		//private static readonly string BinaryPath = "09-ind_y.bin";     // pass
 		//private static readonly string BinaryPath = "10-branches.bin";  // pass
 		//private static readonly string BinaryPath = "11-stack.bin";     // pass
 		//private static readonly string BinaryPath = "12-jmp_jsr.bin";   // pass
@@ -33,7 +33,7 @@ namespace K6502CLI
 		//private static readonly string BinaryPath = "15-brk.bin";       // pass
 		//private static readonly string BinaryPath = "16-special.bin";   // pass
 
-		private static readonly string BinaryPath = "rom.bin";
+		//private static readonly string BinaryPath = "rom.bin";
 
 		private static readonly int SkipToAddress = 0x0600;
 		private static readonly bool DoSkip = false;
@@ -131,7 +131,7 @@ namespace K6502CLI
 		private static void InitSystem(bool doSkip = false)
 		{
 			Memory = new(64 * 1024, File.ReadAllBytes(BinaryPath));
-			Cpu = new K6502(Memory);
+			Cpu = new K6502(Memory, false);
 
 			if (doSkip)
 				while (Cpu.GetPC != SkipToAddress)

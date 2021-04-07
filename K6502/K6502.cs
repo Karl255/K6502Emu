@@ -50,7 +50,7 @@ namespace K6502Emu
 		/// </summary>
 		/// <param name="addressableComponent">The <see cref="IAddressable{TDataSize}"/> connected to the data and address bus of the 6502.</param>
 		/// <param name="enableDecimalMode">If decimal mode should be enabled.</param>
-		public K6502(IAddressable<byte> addressableComponent, bool enableDecimalMode = true)
+		public K6502(IAddressable<byte> addressableComponent, bool enableDecimalMode)
 		{
 			DecimalModeEnabled = enableDecimalMode;
 			Memory = addressableComponent;
@@ -216,7 +216,7 @@ namespace K6502Emu
 
 				uint unsignedSub = (uint)A - val - borrow;             // sum them all as ints (so the result isn't limited to the byte range)
 				int signedSub = (sbyte)A - (sbyte)val - (sbyte)borrow; // cast all to sbyte, then sum them as ints
-				P.Carry = !(unsignedSub < 0);                          // if unisgned underflow (borrow = !carry)
+				P.Carry = !(unsignedSub > 255);                        // if unisgned underflow (wraps around), (borrow = !carry)
 				P.Overflow = signedSub > 127 || signedSub < -128;      // if signed over/underflow
 				A = SetFlagsZN((byte)(unsignedSub & 0xff));            // lowest 8 bits go into A and set flags Zero and Negative
 			}
