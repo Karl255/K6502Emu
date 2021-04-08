@@ -7,7 +7,7 @@ namespace K6502Emu
 		protected TDataSize[] memory;
 		public int AddressableSize { get; private set; }
 		public bool IsReadonly { get; set; }
-		private int AddressMask;
+		private int AddressMask { get; init; }
 
 		/// <summary>
 		/// Initializes a MirroredMemory with the specified real size and addressable size

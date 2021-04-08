@@ -5,7 +5,7 @@ namespace K6502Emu
 {
 	public class Bus : IAddressable<byte>, IEnumerable<(int offset, IAddressable<byte> component)>
 	{
-		private List<(int offset, IAddressable<byte> component)> Components;
+		private List<(int offset, IAddressable<byte> component)> Components { get; init; }
 
 		public Bus(int addressableSize)
 		{

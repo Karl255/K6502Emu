@@ -14,8 +14,8 @@ namespace K6502Emu
 		private byte _y = 0;
 
 		protected DoubleRegister Address; // memory address register
-		protected DoubleRegister PC = new DoubleRegister(0xfffc); // program counter
-		protected StatusRegister P = new StatusRegister(0b0011_0100); // status register: N V - B D I Z C
+		protected DoubleRegister PC = new(0xfffc); // program counter
+		protected StatusRegister P = new(0b0011_0100); // status register: N V - B D I Z C
 		protected byte S = 0xFD; // stack pointer
 
 		// properties for getting the internal state from outside, useful for debugging and getting insight about the execution
