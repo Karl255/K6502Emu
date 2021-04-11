@@ -7,7 +7,7 @@ namespace K6502Emu
 		// TODO: remove the SetFlagsZN calls
 		// the flags zero and negative are set/cleared when X/Y get loaded in any way
 		// A doesn't have that because of decimal mode
-		protected byte A { get; set; } = 0;
+		protected byte A = 0;
 		protected byte X { get => _x; set => _x = SetFlagsZN(value); }
 		protected byte Y { get => _y; set => _y = SetFlagsZN(value); }
 		private byte _x = 0;
@@ -38,7 +38,7 @@ namespace K6502Emu
 		private ushort OpCode = 0x4C; // JMP abs at cycle 1
 		protected bool instructionEnded = false;
 
-		public bool IrqInput { get; set; } = false;
+		public bool IrqInput = false;
 		private bool IrqFlag = false;
 		private bool NmiInput = false;
 		private bool NmiFlag = false;
