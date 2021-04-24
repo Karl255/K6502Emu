@@ -3,42 +3,16 @@ using System.IO;
 using System.Text;
 using K6502Emu;
 
-namespace K6502CLI
+namespace K6502Cli
 {
 	internal class Bootstrapper
 	{
-		// source: https://github.com/Klaus2m5/6502_65C02_functional_tests
-		private static readonly string BinaryPath = "6502_functional_test.bin";
-
-		// "Ruud Baltissen's 8k test ROM" from http://www.6502.org/tools/emu/
-		//private static readonly string BinaryPath = "ttl6502.bin";
-
-		// source: instr_test_v5 by blargg, http://wiki.nesdev.com/w/index.php/Emulator_tests
-		// NOTE 1: functionality of unofficial instructions is ignored
-		// NOTE 2: the code is extracted from the .nes file and put into a 64k binary (placed at last 32k)
-		//private static readonly string BinaryPath = "01-basics.bin";    // pass
-		//private static readonly string BinaryPath = "02-implied.bin";   // pass
-		//private static readonly string BinaryPath = "03-immediate.bin"; // pass
-		//private static readonly string BinaryPath = "04-zero_page.bin"; // pass
-		//private static readonly string BinaryPath = "05-zp_xy.bin";     // pass
-		//private static readonly string BinaryPath = "06-absolute.bin";  // pass
-		//private static readonly string BinaryPath = "07-abs_xy.bin";    // pass
-		//private static readonly string BinaryPath = "08-ind_x.bin";     // pass
-		//private static readonly string BinaryPath = "09-ind_y.bin";     // pass
-		//private static readonly string BinaryPath = "10-branches.bin";  // pass
-		//private static readonly string BinaryPath = "11-stack.bin";     // pass
-		//private static readonly string BinaryPath = "12-jmp_jsr.bin";   // pass
-		//private static readonly string BinaryPath = "13-rts.bin";       // pass
-		//private static readonly string BinaryPath = "14-rti.bin";       // pass
-		//private static readonly string BinaryPath = "15-brk.bin";       // pass
-		//private static readonly string BinaryPath = "16-special.bin";   // pass
-
-		//private static readonly string BinaryPath = "rom.bin";
+		private static readonly string BinaryPath = "rom.bin";
 
 		private static readonly int SkipToAddress = 0x0600;
 		private static readonly bool DoSkip = false;
 
-		private static K6502Emu.Memory<byte> Memory;
+		private static K6502Cli.Memory<byte> Memory;
 		private static K6502 Cpu;
 		private static byte Page;
 

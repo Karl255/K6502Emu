@@ -1,8 +1,9 @@
 ﻿using System;
+using K6502Emu;
 
-namespace K6502Emu
+namespace K6502Cli
 {
-	public class Memory<TDataSize> : IAddressable<TDataSize>
+	internal class Memory<TDataSize> : IAddressable<TDataSize>
 	{
 		protected TDataSize[] memory;
 		public int AddressableSize { get; private set; }
