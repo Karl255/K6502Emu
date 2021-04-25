@@ -5,7 +5,7 @@ namespace K6502Emu.UnitTests
 	public class DecimalModeTests
 	{
 		private const bool DecimalModeEnabled = true;
-		private readonly StatusRegister P = new StatusRegister(0b0000_1000);
+		private readonly StatusRegister P = new(0b0000_1000);
 		private byte A;
 
 		/*
