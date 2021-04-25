@@ -418,7 +418,6 @@ namespace K6502Emu
 		private void PHA_2() => Memory[0x0100 + S--] = A; // push P on stack
 
 		// 4C JMP abs
-		// TODO: implement bug
 		private void JMP_a_1() => Address.Lower = Memory[PC.Whole++];
 		private void JMP_a_2() => (PC.Lower, PC.Upper) = (Address.Lower, Memory[PC.Whole]);
 
@@ -461,7 +460,6 @@ namespace K6502Emu
 
 
 		// 6C JMP ind
-		// TODO: implement bug
 		private void JMP_i_1() => Address.Lower = Memory[PC.Whole++];                 // fetch indirect address low
 		private void JMP_i_2() => Address.Upper = Memory[PC.Whole++];                 // fetch indirect address high
 		private void JMP_i_3() => Operand = Memory[Address.Whole];                    // fetch effective address low

@@ -19,7 +19,6 @@ namespace K6502Emu
 		protected byte S = 0xFD; // stack pointer
 
 		// properties for getting the internal state from outside, useful for debugging and getting insight about the execution
-		// TODO: give better names to these
 		public byte GetA => A;
 		public byte GetX => X;
 		public byte GetY => Y;
